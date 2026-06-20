@@ -1,0 +1,146 @@
+{
+  "entities": {
+    "userProfile": {
+      "title": "User Profile",
+      "description": "User accounts featuring registration approval workflows and roles",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Unique identifier of the authenticated user"
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Full name of the user in Indonesian text"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["student", "admin"],
+          "description": "Access level of the user"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["PENDING", "APPROVED", "DISAPPROVED", "REVISE"],
+          "description": "Approval status of the student account"
+        },
+        "learningReason": {
+          "type": "string",
+          "description": "Motivation provided by student to learn Syriac"
+        },
+        "adminFeedback": {
+          "type": "string",
+          "description": "Constructive correction remarks or decision logic from Rudolf A. Luhukay"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the profile was created"
+        }
+      },
+      "required": ["userId", "email", "fullName", "role", "status", "createdAt"]
+    },
+    "courseModule": {
+      "title": "Course Module",
+      "description": "Dynamic Syriac module containing study notes, quiz parameters, and teaching attachments",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "description": "Modular numeric order identifier"
+        },
+        "title": {
+          "type": "string",
+          "description": "Indonesian chapter title"
+        },
+        "titleSyriac": {
+          "type": "string",
+          "description": "Beautiful Syriac heading"
+        },
+        "category": {
+          "type": "string",
+          "description": "Course focus category"
+        },
+        "summary": {
+          "type": "string",
+          "description": "Short chapter abstraction"
+        },
+        "introduction": {
+          "type": "string",
+          "description": "Detailed introductory text"
+        },
+        "content": {
+          "type": "string",
+          "description": "Markdown instructional corpus"
+        },
+        "keyRules": {
+          "type": "array",
+          "description": "List of structural grammar instructions"
+        },
+        "attachments": {
+          "type": "array",
+          "description": "Media attachments uploaded or referenced by the Super Admin"
+        }
+      },
+      "required": ["id", "title", "titleSyriac", "category", "summary", "introduction", "content", "keyRules"]
+    },
+    "userFile": {
+      "title": "User File",
+      "description": "Metadata and base64 payloads of documents, PDFs, or audio notes submitted per module",
+      "type": "object",
+      "properties": {
+        "fileId": {
+          "type": "string",
+          "description": "Unique document ID of the file"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner of the file"
+        },
+        "moduleId": {
+          "type": "string",
+          "description": "Reference to the associated module ID (e.g. module_1) or general"
+        },
+        "fileName": {
+          "type": "string",
+          "description": "Name of the file"
+        },
+        "fileSize": {
+          "type": "number",
+          "description": "Size in bytes"
+        },
+        "fileType": {
+          "type": "string",
+          "description": "Mime descriptor"
+        },
+        "fileData": {
+          "type": "string",
+          "description": "Base64 payload"
+        },
+        "uploadDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Upload timestamp"
+        }
+      },
+      "required": ["fileId", "userId", "moduleId", "fileName", "fileSize", "fileType", "fileData", "uploadDate"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "userProfile",
+      "description": "User directory metadata featuring approval status fields"
+    },
+    "/users/{userId}/files/{fileId}": {
+      "schema": "userFile",
+      "description": "Student documents uploaded either globally or bound to specific learning chapters"
+    },
+    "/modules/{moduleId}": {
+      "schema": "courseModule",
+      "description": "Global collection of editable Syriac curriculum records and teaching resources"
+    }
+  }
+}

@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Georgia&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-syriac/index.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-syriac-eastern/index.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-syriac-western/index.css');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Georgia", serif;
+  --font-sans: "Inter", "Georgia", sans-serif;
+  --font-estrangelo: "Noto Sans Syriac", sans-serif;
+  --font-serto: "Noto Sans Syriac Western", sans-serif;
+  --font-madenhoyo: "Noto Sans Syriac Eastern", sans-serif;
+  
+  --color-slate-50: #F4F1EA;
+  --color-slate-100: #EBE7DC;
+  --color-slate-200: #D1CCBD;
+  --color-slate-300: #B8B2A0;
+  --color-slate-400: #8A8471;
+  --color-slate-500: #8A8471;
+  --color-slate-600: #5A5A40;
+  --color-slate-700: #3D3A33;
+  --color-slate-800: #3D3A33;
+  --color-slate-900: #2D2A26;
+
+  --color-indigo-50: #F1EEE6;
+  --color-indigo-100: #E8E4D9;
+  --color-indigo-200: #D1CCBD;
+  --color-indigo-500: #5A5A40;
+  --color-indigo-600: #5A5A40;
+  --color-indigo-700: #494933;
+  --color-indigo-800: #3D3A33;
+  --color-indigo-900: #2D2A26;
+
+  --color-amber-50: #F9F7F2;
+  --color-amber-100: #E8E4D9;
+  --color-amber-300: #D1A153;
+  --color-amber-400: #5A5A40;
+  --color-amber-500: #5A5A40;
+  --color-amber-80*: #3D3A33;
+}
+
+/* Custom font utilities for easy targeting across app components */
+.font-syriac {
+  font-family: "Noto Sans Syriac", "Georgia", serif !important;
+}
+
+body.syriac-estrangelo .font-syriac {
+  font-family: "Noto Sans Syriac", "Georgia", serif !important;
+}
+
+body.syriac-serto .font-syriac {
+  font-family: "Noto Sans Syriac Western", "Georgia", serif !important;
+}
+
+body.syriac-madenhoyo .font-syriac {
+  font-family: "Noto Sans Syriac Eastern", "Georgia", serif !important;
+}
+
+.font-syriac-estrangelo {
+  font-family: "Noto Sans Syriac", "Georgia", serif !important;
+}
+
+.font-syriac-serto {
+  font-family: "Noto Sans Syriac Western", "Georgia", serif !important;
+}
+
+.font-syriac-madenhoyo {
+  font-family: "Noto Sans Syriac Eastern", "Georgia", serif !important;
+}
+
+/* Base style resets */
+body {
+  background-color: #F4F1EA !important;
+  color: #3D3A33 !important;
+  font-family: "Georgia", "Inter", serif !important;
+}
+
+/* Custom background patterns from design spec */
+.lesson-area-pattern {
+  background-image: radial-gradient(#E8E4D9 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Override input/focus highlights with Natural Tones */
+input:focus, textarea:focus, select:focus {
+  border-color: #5A5A40 !important;
+  box-shadow: 0 0 0 2px rgba(90, 90, 64, 0.15) !important;
+}
+
+/* Printing styles for E-Certificates */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  /* Hide every element on the screen by default during print */
+  body * {
+    visibility: hidden;
+  }
+  /* Show only the certificate paper card itself and its inner child elements */
+  #arami-certificate-paper, #arami-certificate-paper * {
+    visibility: visible;
+  }
+  /* Absolute position the paper card to take the full page */
+  #arami-certificate-paper {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    height: 100% !important;
+    border: 8px double #C5A059 !important;
+    padding: 2.5cm !important;
+    box-sizing: border-box !important;
+    background-color: #FCFBF8 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Hide the elements that shouldn't be printed */
+  .no-print {
+    display: none !important;
+  }
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+}
+

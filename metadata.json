@@ -1,0 +1,6 @@
+{
+  "name": "Kursus Bahasa Aram Syriac",
+  "description": "Aplikasi belajar bahasa Aram (Syriac) interaktif dengan 20 modul tata bahasa lengkap, kuis, papan ketik Arami, daftar istilah, dan Tutor AI asisten.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

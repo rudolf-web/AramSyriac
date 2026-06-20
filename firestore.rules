@@ -1,0 +1,149 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net - Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Admin detection: checks email directly or reads the Firestore profile's role
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token != null && 'email' in request.auth.token && request.auth.token.email != null && request.auth.token.email.lower() == 'rudolfluhukay69@guru.smp.belajar.id') ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Check if the current student user profile is APPROVED
+    function isUserApproved() {
+      return isSignedIn() && (
+        isAdmin() || 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'APPROVED')
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // --- Validation Blueprints ---
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['userId', 'email', 'fullName', 'role', 'status', 'createdAt'])
+          && data.userId is string && data.userId.size() <= 128
+          && data.email is string && data.email.size() <= 256
+          && data.fullName is string && data.fullName.size() <= 512
+          && data.role is string && (data.role == 'student' || data.role == 'admin')
+          && data.status is string && (data.status == 'PENDING' || data.status == 'APPROVED' || data.status == 'DISAPPROVED' || data.status == 'REVISE')
+          && data.createdAt is string && data.createdAt.size() <= 64;
+    }
+
+    function isValidUserFile(data) {
+      return data.keys().hasAll(['fileId', 'userId', 'moduleId', 'fileName', 'fileSize', 'fileType', 'fileData', 'uploadDate'])
+          && data.keys().size() == 8
+          && data.fileId is string && data.fileId.size() <= 128
+          && data.userId is string && data.userId.size() <= 128
+          && data.moduleId is string && data.moduleId.size() <= 128
+          && data.fileName is string && data.fileName.size() <= 512
+          && data.fileSize is int && data.fileSize >= 0 && data.fileSize <= 1500000 // limit to 1.5MB
+          && data.fileType is string && data.fileType.size() <= 256
+          && data.fileData is string && data.fileData.size() <= 2500000
+          && data.uploadDate is string && data.uploadDate.size() <= 64;
+    }
+
+    function isValidCourseModule(data) {
+      return data.keys().hasAll(['id', 'title', 'titleSyriac', 'category', 'summary', 'introduction', 'content', 'keyRules'])
+          && data.id is int
+          && data.title is string && data.title.size() <= 256
+          && data.titleSyriac is string && data.titleSyriac.size() <= 256
+          && data.category is string && data.category.size() <= 128
+          && data.summary is string && data.summary.size() <= 1000
+          && data.introduction is string && data.introduction.size() <= 5000
+          && data.content is string && data.content.size() <= 15000
+          && data.keyRules is list;
+    }
+
+    // --- Collection Routes & Access Policies ---
+
+    // 0. Test / Connection status metrics
+    match /test/{document=**} {
+      allow read, write: if true;
+    }
+
+    // 1. Users collection
+    match /users/{userId} {
+      // Admins can read all profiles; members can get their own
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+
+      // Student Sign Up check (Prevents Privilege Escalation / Self-Approval)
+      allow create: if isOwner(userId) 
+                    && isValidUserProfile(request.resource.data)
+                    && request.resource.data.userId == userId
+                    && (
+                      (request.resource.data.role == 'student' && request.resource.data.status == 'PENDING') || 
+                      (request.resource.data.role == 'admin' && request.resource.data.status == 'APPROVED' && request.auth.token != null && 'email' in request.auth.token && request.auth.token.email != null && request.auth.token.email.lower() == 'rudolfluhukay69@guru.smp.belajar.id')
+                    );
+
+      // Allow students to edit their profile (e.g. updating name or learn reason after revision request)
+      // but strictly guard they don't self-promote their role or status!
+      allow update: if isAdmin() || (
+        isOwner(userId)
+        && isValidUserProfile(request.resource.data)
+        && request.resource.data.userId == userId
+        && request.resource.data.role == resource.data.role
+        && (request.resource.data.status == resource.data.status || 
+            (resource.data.status == 'REVISE' && request.resource.data.status == 'PENDING'))
+        && request.resource.data.createdAt == resource.data.createdAt
+      );
+
+      allow delete: if isAdmin();
+
+      // Subcollection for member-uploaded files (General and Per-Module tasks)
+      match /files/{fileId} {
+        allow get: if isOwner(userId) || isAdmin();
+        // Checked query list mapping
+        allow list: if isOwner(userId) || isAdmin();
+        
+        allow create: if isOwner(userId) 
+                      && isUserApproved()
+                      && isValidUserFile(request.resource.data)
+                      && request.resource.data.userId == userId
+                      && request.resource.data.fileId == fileId;
+
+        allow update: if isOwner(userId)
+                      && isUserApproved()
+                      && isValidUserFile(request.resource.data)
+                      && request.resource.data.userId == userId
+                      && request.resource.data.fileId == fileId
+                      && request.resource.data.uploadDate == resource.data.uploadDate;
+
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      // Subcollection for vocabulary
+      match /vocabulary/{wordId} {
+        allow get, list: if isOwner(userId) || isAdmin();
+        allow create, update: if isOwner(userId) && isUserApproved();
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // 2. Global Modules collection (Added/Modified by Admin, visible to approved students)
+    match /modules/{moduleId} {
+      allow get, list: if true; // Allow reading lesson modules publicly to ensure zero starter race conditions
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}
