@@ -44,6 +44,7 @@ import { AdminPanel } from "./components/AdminPanel";
 import { AramiAuthGate } from "./components/AramiAuthGate";
 import { CertificateModal } from "./components/CertificateModal";
 import { DailyJournal } from "./components/DailyJournal";
+import { DonationCard } from "./components/DonationCard";
 import { UserProgress, Module, QuizQuestion, UserFile } from "./types";
 import { LEVEL_EXAMS } from "./data/levelExams";
 import { 
@@ -1857,6 +1858,9 @@ export default function App() {
                     )}
                   </div>
                 </div>
+
+                {/* Donasi sukarela — aplikasi tetap gratis untuk semua */}
+                <DonationCard />
 
                 {/* KPI Metrics */}
                 {isApproved && (
