@@ -44,7 +44,8 @@ export function AIAssistant() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/tutor", {
+      // Tutor AI server (Vercel, gratis): https://learn-syriac-tutor.vercel.app
+      const response = await fetch("https://learn-syriac-tutor.vercel.app/api/tutor", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
