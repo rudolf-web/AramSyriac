@@ -253,26 +253,12 @@ export default function App() {
     return levelModules.every(m => progress.completedModules.includes(m.id));
   };
 
-  const isModuleNavigable = (mod: Module) => {
-    const isUserAdmin = userProfile?.role === "admin";
-    if (isUserAdmin) return true;
-    
-    // Level boundary gates:
-    if (mod.category === "Level A2") {
-      const a1Completed = progress.completedLevelExams?.includes("A1");
-      if (!a1Completed) return false;
-    }
-    if (mod.category === "Level B1") {
-      const a2Completed = progress.completedLevelExams?.includes("A2");
-      if (!a2Completed) return false;
-    }
-
-    const sorted = [...modules].sort((a, b) => a.id - b.id);
-    const idx = sorted.findIndex(item => item.id === mod.id);
-    if (idx <= 0) return true; // first module is always unlocked
-    
-    const prevMod = sorted[idx - 1];
-    return progress.completedModules.includes(prevMod.id);
+  // All modules are freely open (user request 2026-11-17: "klik manapun
+  // bisa bahkan ulang") — students may open any module, in any order, and
+  // re-read completed ones. Level exams are still gated by
+  // isLevelUnlocked (all modules of that level must be completed).
+  const isModuleNavigable = (_mod: Module) => {
+    return true;
   };
 
   const renderLevelExamSidebarItem = (lvl: "A1" | "A2" | "B1") => {
@@ -979,30 +965,12 @@ export default function App() {
   // Next-step button after finishing a module: the next module, or the
   // level exam when the next module sits behind a level gate. Certificates
   // are only given at the end of a level, never per module.
-  const renderNextStepButton = (className: string, forceCompleted = false) => {
+  const renderNextStepButton = (className: string) => {
     const sorted = [...modules].sort((a, b) => a.id - b.id);
     const idx = sorted.findIndex(m => m.id === currentModule.id);
     const next = sorted[idx + 1];
-    // Before the module quiz is passed there is no working "next" yet:
-    // show a locked button that explains the quiz requirement instead of
-    // hiding the button entirely (students kept reporting "Next ga bisa").
-    if (!forceCompleted && !progress.completedModules.includes(currentModule.id)) {
-      const lvl = currentModule.category === "Level A1" ? "A1" : currentModule.category === "Level A2" ? "A2" : "B1";
-      const label = !next ? `Buka Ujian ${lvl}` : `Lanjut ke Modul ${next.id}`;
-      const hint = !next
-        ? `Selesaikan dulu kuis Modul ${currentModule.id} dengan nilai minimal 70%. Setelah lulus, ujian ${lvl} terbuka.`
-        : `Selesaikan dulu kuis Modul ${currentModule.id} dengan nilai minimal 70%. Setelah lulus, Modul ${next.id} terbuka otomatis.`;
-      return (
-        <button
-          onClick={() => window.alert(hint)}
-          className="bg-stone-200 text-stone-500 font-bold text-xs sm:text-sm px-6 py-2.5 rounded-xl cursor-pointer flex items-center gap-1.5"
-          title="Selesaikan kuis modul ini dulu"
-        >
-          <Lock className="w-3.5 h-3.5" />
-          {label}
-        </button>
-      );
-    }
+    // Modules are freely open now (user request 2026-11-17), so the next
+    // button always navigates — no locked state here anymore.
     const goToExam = (lvl: "A1" | "A2" | "B1") => {
       setSelectedLevelExam(lvl);
       setIsQuizMode(false);
@@ -3199,7 +3167,7 @@ export default function App() {
                               })();
                               return passedCurrent || passedPreviously;
                             })() ? (
-                              renderNextStepButton("w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 font-bold text-white text-xs px-5 py-2.5 rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-1.5", true)
+                              renderNextStepButton("w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 font-bold text-white text-xs px-5 py-2.5 rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-1.5")
                             ) : (
                               <button
                                 onClick={() => {
