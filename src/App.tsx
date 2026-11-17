@@ -224,12 +224,9 @@ export default function App() {
   const [isLevelExamAnswered, setIsLevelExamAnswered] = useState(false);
   const [levelExamScore, setLevelExamScore] = useState(0);
   const [levelExamResult, setLevelExamResult] = useState<{ score: number; passed: boolean; scorePercent: number } | null>(null);
+  // Certificate Modal States (level graduation only — no per-module certificates)
   const [levelCertificateOpen, setLevelCertificateOpen] = useState(false);
   const [levelCertificateToOpen, setLevelCertificateToOpen] = useState<"A1" | "A2" | "B1" | null>(null);
-
-  // Certificate Modal States
-  const [isCertificateOpen, setIsCertificateOpen] = useState(false);
-  const [certificateModule, setCertificateModule] = useState<Module | null>(null);
 
   // Syriac dynamic font toggle
   const [syriacFont, setSyriacFont] = useState<"estrangelo" | "serto" | "madenhoyo">("estrangelo");
@@ -399,16 +396,27 @@ export default function App() {
                   profileData.role = "admin";
                   profileData.status = "APPROVED";
                 }
+
+                // Google sign-in is auto-approved (verified Google identity):
+                // upgrade an older PENDING profile created by a Google login.
+                const signedInWithGoogleHere = (currentUser.providerData || []).some((p: any) => p.providerId === "google.com");
+                if (signedInWithGoogleHere && profileData.status === "PENDING") {
+                  profileData.status = "APPROVED";
+                  setDoc(userRef, { status: "APPROVED" }, { merge: true });
+                }
                 setUserProfile(profileData);
               } else {
                 // Create dynamic profile if doesn't exist
                 const isAdminEmail = currentUser.email?.toLowerCase() === "rudolfluhukay69@guru.smp.belajar.id";
+                // Google sign-in is auto-approved (verified Google identity);
+                // only email/password signups start as PENDING for admin review.
+                const signedInWithGoogle = (currentUser.providerData || []).some((p: any) => p.providerId === "google.com");
                 const newProfile = {
                   userId: currentUser.uid,
                   email: currentUser.email?.toLowerCase() || "",
                   fullName: currentUser.displayName || "Siswa Arami",
                   role: isAdminEmail ? "admin" : "student",
-                  status: isAdminEmail ? "APPROVED" : "PENDING",
+                  status: (isAdminEmail || signedInWithGoogle) ? "APPROVED" : "PENDING",
                   learningReason: "Belajar sastra semitik kuno.",
                   activeSessionId: appSessionId,
                   createdAt: new Date().toISOString()
@@ -538,34 +546,28 @@ export default function App() {
         try {
           const querySnapshot = await getDocs(collection(db, "modules"));
           const modsList: Module[] = [];
-          
+
           querySnapshot.forEach((doc) => {
             modsList.push(doc.data() as Module);
           });
 
-          if (modsList.length === 0) {
-            // Seed modules securely to Firestore
-            console.log("Seeding course modules into cloud...");
-            for (const m of syriacModules) {
-              await setDoc(doc(db, "modules", String(m.id)), m);
+          // The bundled modules are the source of truth for the catalogue:
+          // overlay cloud versions (admin edits) on top, but never let a
+          // partial cloud list hide modules from students.
+          const cloudById = new Map(modsList.map(m => [m.id, m]));
+          const merged: Module[] = syriacModules.map(b => cloudById.get(b.id) || b);
+          for (const m of modsList) {
+            if (!merged.some(x => x.id === m.id)) merged.push(m);
+          }
+          merged.sort((a, b) => a.id - b.id);
+          setModules(merged);
+
+          // Best-effort background sync of any missing bundled modules
+          // to the cloud (admin edits stay intact; failures are ignored).
+          for (const m of syriacModules) {
+            if (!cloudById.has(m.id)) {
+              setDoc(doc(db, "modules", String(m.id)), m).catch(() => {});
             }
-            // Sort, assign
-            const copy = [...syriacModules];
-            copy.sort((a, b) => a.id - b.id);
-            setModules(copy);
-          } else {
-            // If the database has fewer modules than standard syriacModules, let's sync and add the missing ones
-            if (modsList.length < syriacModules.length) {
-              console.log("Syncing missing course modules to cloud...");
-              const existingIds = new Set(modsList.map(m => m.id));
-              const missingModules = syriacModules.filter(m => !existingIds.has(m.id));
-              for (const m of missingModules) {
-                await setDoc(doc(db, "modules", String(m.id)), m);
-                modsList.push(m);
-              }
-            }
-            modsList.sort((a, b) => a.id - b.id);
-            setModules(modsList);
           }
         } catch (err) {
           console.error("Gagal melacak database modul cloud:", err);
@@ -970,6 +972,47 @@ export default function App() {
       });
       setIsLevelExamActive(false);
     }
+  };
+
+  // Next-step button after finishing a module: the next module, or the
+  // level exam when the next module sits behind a level gate. Certificates
+  // are only given at the end of a level, never per module.
+  const renderNextStepButton = (className: string, forceCompleted = false) => {
+    if (!forceCompleted && !progress.completedModules.includes(currentModule.id)) return null;
+    const sorted = [...modules].sort((a, b) => a.id - b.id);
+    const idx = sorted.findIndex(m => m.id === currentModule.id);
+    const next = sorted[idx + 1];
+    const goToExam = (lvl: "A1" | "A2" | "B1") => {
+      setSelectedLevelExam(lvl);
+      setIsQuizMode(false);
+      setQuizResult(null);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+    if (!next) {
+      const lvl = currentModule.category === "Level A1" ? "A1" : currentModule.category === "Level A2" ? "A2" : "B1";
+      return (
+        <button onClick={() => goToExam(lvl as any)} className={className}>
+          Buka Ujian {lvl} →
+        </button>
+      );
+    }
+    if (isModuleNavigable(next)) {
+      return (
+        <button
+          onClick={() => { setSelectedModuleId(next.id); setIsQuizMode(false); setQuizResult(null); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+          className={className}
+        >
+          Lanjut ke Modul {next.id} →
+        </button>
+      );
+    }
+    const examLevel = next.category === "Level A2" ? "A1" : next.category === "Level B1" ? "A2" : null;
+    if (!examLevel) return null;
+    return (
+      <button onClick={() => goToExam(examLevel as any)} className={className}>
+        Buka Ujian {examLevel} →
+      </button>
+    );
   };
 
   const renderLevelExamInterface = () => {
@@ -1645,7 +1688,7 @@ export default function App() {
       <header className="sticky top-0 bg-[#EBE7DC]/95 backdrop-blur-md border-b border-[#D1CCBD] z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 cursor-pointer" title="Kembali ke Beranda" onClick={() => { setActiveTab("dashboard"); setIsQuizMode(false); setSelectedLevelExam(null); }}>
             <div className="w-11 h-11 bg-[#5A5A40] rounded-xl flex items-center justify-center text-white font-bold select-none font-serif text-xl border border-[#494933]">
               ܐ
             </div>
@@ -1692,7 +1735,7 @@ export default function App() {
         <div className="flex bg-[#EBE7DC] p-1 rounded-2xl border border-[#D1CCBD] shadow-sm max-w-5xl mx-auto mb-8 overflow-x-auto whitespace-nowrap font-sans text-xs sm:text-sm">
           
           <button
-            onClick={() => { setActiveTab("dashboard"); setIsQuizMode(false); }}
+            onClick={() => { setActiveTab("dashboard"); setIsQuizMode(false); setSelectedLevelExam(null); }}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold transition-all cursor-pointer ${
               activeTab === "dashboard" ? "bg-[#5A5A40] text-white shadow" : "text-[#8A8471] hover:text-[#3D3A33] hover:bg-[#F1EEE6]"
             }`}
@@ -1702,7 +1745,7 @@ export default function App() {
           </button>
 
           <button
-            onClick={() => { setActiveTab("modules"); setIsQuizMode(false); }}
+            onClick={() => { setActiveTab("modules"); setIsQuizMode(false); setSelectedLevelExam(null); }}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold transition-all cursor-pointer ${
               activeTab === "modules" ? "bg-[#5A5A40] text-white shadow" : "text-[#8A8471] hover:text-[#3D3A33] hover:bg-[#F1EEE6]"
             }`}
@@ -1850,7 +1893,7 @@ export default function App() {
                     {isApproved && (
                       <div className="pt-2 flex flex-wrap gap-3 font-sans text-xs">
                         <button
-                          onClick={() => setActiveTab("modules")}
+                          onClick={() => { setActiveTab("modules"); setSelectedLevelExam(null); }}
                           className="bg-[#EBE7DC] hover:bg-[#D1CCBD] text-[#3D3A33] font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer shadow"
                         >
                           Mulai Belajar (Syllabus Lengkap)
@@ -2095,7 +2138,15 @@ export default function App() {
                 {/* Modules core teaching pane */}
                 <div className="lg:col-span-8 bg-white border border-[#E8E4D9] rounded-3xl p-6 shadow-sm min-h-[600px] flex flex-col justify-between font-sans">
                   {selectedLevelExam !== null ? (
-                    renderLevelExamInterface()
+                    <div>
+                      <button
+                        onClick={() => setSelectedLevelExam(null)}
+                        className="mb-4 px-4 py-2 border border-[#D1CCBD] hover:bg-[#F1EEE6] text-[#5A5A40] text-xs font-bold rounded-xl cursor-pointer"
+                      >
+                        ← Kembali ke Silabus
+                      </button>
+                      {renderLevelExamInterface()}
+                    </div>
                   ) : !isModuleNavigable(currentModule) ? (
                     <div className="space-y-8 animate-fade-in text-center py-16 px-4 flex flex-col items-center justify-center my-auto">
                       <div className="w-20 h-20 bg-rose-50 text-rose-500 border border-rose-200 rounded-full flex items-center justify-center shadow-sm">
@@ -3017,25 +3068,7 @@ export default function App() {
                           </div>
                           
                           <div className="flex gap-2.5 flex-wrap justify-center sm:justify-end">
-                            {(() => {
-                              if (!progress.completedModules.includes(currentModule.id)) return false;
-                              const highScore = progress.quizHighScores[currentModule.id] || 0;
-                              const totalQuestions = currentModule.quizzes?.length || 1;
-                              const scorePercent = Math.round((highScore / totalQuestions) * 100);
-                              return scorePercent >= 70;
-                            })() && (
-                              <button
-                                onClick={() => {
-                                  setCertificateModule(currentModule);
-                                  setIsCertificateOpen(true);
-                                }}
-                                className="bg-amber-500 hover:bg-amber-600 border border-amber-600 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow transition-all cursor-pointer flex items-center gap-1.5"
-                              >
-                                <Award className="w-4 h-4 text-white" />
-                                Cetak E-Sertifikat
-                              </button>
-                            )}
-                            
+                            {renderNextStepButton("bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm px-6 py-2.5 rounded-xl shadow transition-colors cursor-pointer")}
                             <button
                               onClick={() => {
                                 setIsQuizMode(true);
@@ -3123,16 +3156,7 @@ export default function App() {
                               })();
                               return passedCurrent || passedPreviously;
                             })() ? (
-                              <button
-                                onClick={() => {
-                                  setCertificateModule(currentModule);
-                                  setIsCertificateOpen(true);
-                                }}
-                                className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 font-bold text-white text-xs px-5 py-2.5 rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-1.5"
-                              >
-                                <Award className="w-4 h-4" />
-                                Cetak E-Sertifikat
-                              </button>
+                              renderNextStepButton("w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 font-bold text-white text-xs px-5 py-2.5 rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-1.5", true)
                             ) : (
                               <button
                                 onClick={() => {
@@ -3320,14 +3344,14 @@ export default function App() {
         </div>
       </footer>
 
-      {certificateModule && (
+      {levelCertificateOpen && levelCertificateToOpen && (
         <CertificateModal
-          isOpen={isCertificateOpen}
+          isOpen={levelCertificateOpen}
           onClose={() => {
-            setIsCertificateOpen(false);
-            setCertificateModule(null);
+            setLevelCertificateOpen(false);
+            setLevelCertificateToOpen(null);
           }}
-          module={certificateModule}
+          level={levelCertificateToOpen}
           userFullName={userProfile?.fullName || "Siswa"}
         />
       )}

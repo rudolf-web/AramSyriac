@@ -7,23 +7,49 @@ export const modulesA1: Module[] = [
     titleSyriac: "ܐܠܦܒܝܬ ܣܘܪܝܝܐ",
     category: "Level A1",
     summary: "Mengenal sistem abjad bahasa Aram (Syriac) yang terdiri dari 22 konsonan, ditulis dari kanan ke kiri, dan memiliki gaya penulisan Estrangela.",
-    introduction: "Bahasa Aram dialek Syriac ditulis menggunakan abjad Semitik kuno yang merupakan salah satu varian dari rumpun abjad Aramaik. Abjad ini ditulis dari kanan ke kiri (RTL) dan bersifat kursif. Gaya penulisan klasik yang umum disebut Estrangela (ܐܣܛܪܢܓܠܐ).",
-    content: "Di dalam modul pertama ini, kita akan mempelajari bahwa bahasa Aram Syriac memiliki 22 huruf, semuanya adalah konsonan. Tidak terdapat huruf kapital. Huruf-huruf ini juga melambangkan angka (Gematria). Beberapa huruf berubah bentuknya saat diletakkan di awal, tengah, atau akhir kalimat.",
+    introduction: "Bahasa Aram dialek Syriac ditulis menggunakan abjad Semitik kuno yang merupakan salah satu varian dari rumpun abjad Aramaik. Abjad ini ditulis dari kanan ke kiri (RTL) dan bersifat kursif. Gaya penulisan klasik yang umum disebut Estrangela (ܐܣܛܪܢܓܠܐ). Modul ini adalah fondasi pertama: kalau kamu mengenal 22 huruf dan cara membacanya, kamu bisa membaca kata apa pun dalam bahasa Syriac.",
+    content: "1. 22 Huruf Alfabet\nBahasa Aram Syriac memiliki 22 huruf, semuanya adalah konsonan: Alap (ܐ), Beth (ܒ), Gamal (ܓ), Dalath (ܕ), He (ܗ), Waw (ܘ), Zain (ܙ), Heth (ܚ), Teth (ܛ), Yodh (ܝ), Kaph (ܟ), Lamadh (ܠ), Mim (ܡ), Nun (ܢ), Semkath (ܣ), E (ܥ), Pe (ܦ), Sadhe (ܨ), Qoph (ܩ), Resh (ܪ), Shin (ܫ), Taw (ܬ).\n\n2. Cara Membaca: Kanan ke Kiri\nTeks Syriac dibaca dari kanan ke kiri, berlawanan dengan bahasa Indonesia. Mulailah dari huruf paling kanan. Contoh: kata ܐܒܐ (Aba) dibaca dari kanan: Alap, Beth, Alap — artinya Bapa. Kata ܒܝܬܐ (Bayta) dibaca Beth, Yodh, Taw, Alap — artinya Rumah.\n\n3. Tiga Gaya Tulisan\nAda tiga gaya penulisan utama. Estrangela (ܐܣܛܪܢܓܠܐ) adalah gaya tertua dan paling monumental, dipakai dalam naskah kuno. Serto (ܣܪܛܐ) adalah gaya Barat yang kursif dan memakai titik vokal gaya Yunani. Madnkhaya (ܡܕܢܚܝܐ) adalah gaya Timur yang memakai titik vokal di atas dan di bawah huruf.\n\n4. Huruf yang Tidak Menyambung ke Kiri\nSebagian besar huruf Syriac menyambung satu sama lain. Tetapi enam huruf hanya menyambung ke arah kanan dan tidak menyambung ke kiri: Alap (ܐ), Dalath (ܕ), He (ܗ), Waw (ܘ), Zain (ܙ), dan Resh (ܪ). Karena itu, kata yang mengandung huruf-huruf ini akan terlihat terputus di tengahnya.\n\n5. Huruf sebagai Angka (Gematria)\nSetiap huruf juga melambangkan angka. Alap = 1, Beth = 2, Gamal = 3, Dalath = 4, He = 5, Waw = 6, Zain = 7, Heth = 8, Teth = 9, Yodh = 10, Kaph = 20, Lamadh = 30, Mim = 40, Nun = 50, Semkath = 60, E = 70, Pe = 80, Sadhe = 90, Qoph = 100, Resh = 200, Shin = 300, Taw = 400. Sistem ini dipakai dalam penomoran pasal dan tahun dalam naskah kuno.\n\n6. Tidak Ada Huruf Kapital\nBahasa Syriac tidak mengenal huruf besar dan huruf kecil — semua huruf bentuknya sama. Nama orang dan awal kalimat tidak ditandai dengan huruf kapital seperti dalam bahasa Indonesia.\n\n7. Latihan Mandiri\nBaca dengan suara keras tiga kata ini dari kanan ke kiri: ܐܒܐ (Aba — Bapa), ܐܡܐ (Ema — Ibu), ܒܝܬܐ (Bayta — Rumah). Lalu coba baca ܫܠܡܐ (Shlama — Damai). Hafalkan nama 22 huruf dengan lagu alfabet, dan tulis masing-masing huruf lima kali.",
     keyRules: [
       "Bahasa Syriac ditulis & dibaca dari kanan ke kiri (RTL).",
       "Ada 22 huruf dasar, semuanya adalah huruf mati (konsonan).",
-      "Huruf-huruf seperti Alap (ܐ) dan Dalath (ܕ) hanya menyambung ke arah kanan; tidak menyambung ke kiri."
+      "Tidak ada huruf kapital dalam bahasa Syriac.",
+      "Enam huruf tidak menyambung ke kiri: Alap (ܐ), Dalath (ܕ), He (ܗ), Waw (ܘ), Zain (ܙ), Resh (ܪ).",
+      "Ada tiga gaya tulisan: Estrangela (tertua), Serto (Barat), Madnkhaya (Timur).",
+      "Setiap huruf juga bernilai angka (Gematria): Alap = 1 sampai Taw = 400.",
+      "Bentuk huruf bisa berubah di awal, tengah, atau akhir kata.",
+      "Latihan membaca setiap hari membuat huruf Syriac makin cepat dikenali."
     ],
     vocabulary: [
-      { syriac: "ܐܠܦ", translit: "Alap", meaning: "Huruf pertama (A)", category: "Alfabet" },
-      { syriac: "ܒܝܬ", translit: "Beth", meaning: "Huruf kedua (B)", category: "Alfabet" },
-      { syriac: "ܓܡܠ", translit: "Gamal", meaning: "Huruf ketiga (G)", category: "Alfabet" },
-      { syriac: "ܕܠܬ", translit: "Dalath", meaning: "Huruf keempat (D)", category: "Alfabet" }
+      { syriac: "ܐܠܦ", translit: "Alap", meaning: "Huruf ke-1 (A)", category: "Alfabet" },
+      { syriac: "ܒܝܬ", translit: "Beth", meaning: "Huruf ke-2 (B)", category: "Alfabet" },
+      { syriac: "ܓܡܠ", translit: "Gamal", meaning: "Huruf ke-3 (G)", category: "Alfabet" },
+      { syriac: "ܕܠܬ", translit: "Dalath", meaning: "Huruf ke-4 (D)", category: "Alfabet" },
+      { syriac: "ܗܐ", translit: "He", meaning: "Huruf ke-5 (H)", category: "Alfabet" },
+      { syriac: "ܘܘ", translit: "Waw", meaning: "Huruf ke-6 (W)", category: "Alfabet" },
+      { syriac: "ܙܝܢ", translit: "Zain", meaning: "Huruf ke-7 (Z)", category: "Alfabet" },
+      { syriac: "ܚܝܬ", translit: "Heth", meaning: "Huruf ke-8 (Ḥ)", category: "Alfabet" },
+      { syriac: "ܛܝܬ", translit: "Teth", meaning: "Huruf ke-9 (Ṭ)", category: "Alfabet" },
+      { syriac: "ܝܘܕ", translit: "Yodh", meaning: "Huruf ke-10 (Y)", category: "Alfabet" },
+      { syriac: "ܟܦ", translit: "Kaph", meaning: "Huruf ke-11 (K)", category: "Alfabet" },
+      { syriac: "ܠܡܕ", translit: "Lamadh", meaning: "Huruf ke-12 (L)", category: "Alfabet" },
+      { syriac: "ܡܝܡ", translit: "Mim", meaning: "Huruf ke-13 (M)", category: "Alfabet" },
+      { syriac: "ܢܘܢ", translit: "Nun", meaning: "Huruf ke-14 (N)", category: "Alfabet" },
+      { syriac: "ܣܡܟܬ", translit: "Semkath", meaning: "Huruf ke-15 (S)", category: "Alfabet" },
+      { syriac: "ܥܐ", translit: "E", meaning: "Huruf ke-16 (ʿ)", category: "Alfabet" },
+      { syriac: "ܦܐ", translit: "Pe", meaning: "Huruf ke-17 (P)", category: "Alfabet" },
+      { syriac: "ܨܕܐ", translit: "Sadhe", meaning: "Huruf ke-18 (Ṣ)", category: "Alfabet" },
+      { syriac: "ܩܘܦ", translit: "Qoph", meaning: "Huruf ke-19 (Q)", category: "Alfabet" },
+      { syriac: "ܪܝܫ", translit: "Resh", meaning: "Huruf ke-20 (R)", category: "Alfabet" },
+      { syriac: "ܫܝܢ", translit: "Shin", meaning: "Huruf ke-21 (Sh)", category: "Alfabet" },
+      { syriac: "ܬܘ", translit: "Taw", meaning: "Huruf ke-22 (T)", category: "Alfabet" }
     ],
     examples: [
       { syriac: "ܐܒܐ", translit: "Aba", phonetic: "Abā", indonesian: "Bapa / Ayah" },
       { syriac: "ܐܡܐ", translit: "Ema", phonetic: "Emā", indonesian: "Ibu" },
-      { syriac: "ܒܝܬܐ", translit: "Bayta", phonetic: "Baytā", indonesian: "Rumah" }
+      { syriac: "ܒܝܬܐ", translit: "Bayta", phonetic: "Baytā", indonesian: "Rumah" },
+      { syriac: "ܫܠܡܐ", translit: "Shlama", phonetic: "Shlāmā", indonesian: "Damai / Salam" },
+      { syriac: "ܡܠܟܐ", translit: "Malka", phonetic: "Malkā", indonesian: "Raja" },
+      { syriac: "ܫܡܝܐ", translit: "Shmayya", phonetic: "Shmayyā", indonesian: "Langit / Surga" }
     ],
     quizzes: [
       {

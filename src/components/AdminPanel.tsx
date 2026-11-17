@@ -121,6 +121,18 @@ export function AdminPanel({ currentModules, onModulesUpdated, adminEmail }: Adm
         setUsersList(list);
       } catch (err: any) {
         console.error("Gagal memuat pengguna:", err);
+        // Firestore read failed (e.g. rules not published yet): fall back to
+        // locally registered profiles so pending accounts stay visible.
+        const mockList: any[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith("arami_sb_profile_") || key.startsWith("arami_user_profile_"))) {
+            try {
+              mockList.push(JSON.parse(localStorage.getItem(key) || ""));
+            } catch (e) {}
+          }
+        }
+        setUsersList(mockList);
       } finally {
         setUsersLoading(false);
       }
