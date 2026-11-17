@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   GraduationCap, 
   BookOpen, 
@@ -184,6 +184,7 @@ export default function App() {
   // Tabs: "dashboard" | "modules" | "keyboard" | "notebook" | "tutor" | "files" | "admin"
   const [activeTab, setActiveTab] = useState<"dashboard" | "modules" | "keyboard" | "notebook" | "tutor" | "files" | "admin">("dashboard");
   const [selectedModuleId, setSelectedModuleId] = useState<number>(1);
+  const contentPaneRef = useRef<HTMLDivElement>(null);
   
   // Real dynamic modules (loaded from cloud Firestore or local sandbox)
   const [modules, setModules] = useState<Module[]>([]);
@@ -979,10 +980,29 @@ export default function App() {
   // level exam when the next module sits behind a level gate. Certificates
   // are only given at the end of a level, never per module.
   const renderNextStepButton = (className: string, forceCompleted = false) => {
-    if (!forceCompleted && !progress.completedModules.includes(currentModule.id)) return null;
     const sorted = [...modules].sort((a, b) => a.id - b.id);
     const idx = sorted.findIndex(m => m.id === currentModule.id);
     const next = sorted[idx + 1];
+    // Before the module quiz is passed there is no working "next" yet:
+    // show a locked button that explains the quiz requirement instead of
+    // hiding the button entirely (students kept reporting "Next ga bisa").
+    if (!forceCompleted && !progress.completedModules.includes(currentModule.id)) {
+      const lvl = currentModule.category === "Level A1" ? "A1" : currentModule.category === "Level A2" ? "A2" : "B1";
+      const label = !next ? `Buka Ujian ${lvl}` : `Lanjut ke Modul ${next.id}`;
+      const hint = !next
+        ? `Selesaikan dulu kuis Modul ${currentModule.id} dengan nilai minimal 70%. Setelah lulus, ujian ${lvl} terbuka.`
+        : `Selesaikan dulu kuis Modul ${currentModule.id} dengan nilai minimal 70%. Setelah lulus, Modul ${next.id} terbuka otomatis.`;
+      return (
+        <button
+          onClick={() => window.alert(hint)}
+          className="bg-stone-200 text-stone-500 font-bold text-xs sm:text-sm px-6 py-2.5 rounded-xl cursor-pointer flex items-center gap-1.5"
+          title="Selesaikan kuis modul ini dulu"
+        >
+          <Lock className="w-3.5 h-3.5" />
+          {label}
+        </button>
+      );
+    }
     const goToExam = (lvl: "A1" | "A2" | "B1") => {
       setSelectedLevelExam(lvl);
       setIsQuizMode(false);
@@ -2082,6 +2102,11 @@ export default function App() {
                                 setSelectedModuleId(m.id);
                                 setSelectedLevelExam(null);
                                 setIsQuizMode(false);
+                                // On phones the module content sits below the list:
+                                // scroll it into view so the tap visibly opens it.
+                                if (window.innerWidth < 1024) {
+                                  setTimeout(() => contentPaneRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+                                }
                               }}
                               className={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between gap-3 cursor-pointer ${
                                 !unlocked
@@ -2137,7 +2162,7 @@ export default function App() {
                 </div>
 
                 {/* Modules core teaching pane */}
-                <div className="lg:col-span-8 bg-white border border-[#E8E4D9] rounded-3xl p-6 shadow-sm min-h-[600px] flex flex-col justify-between font-sans">
+                <div ref={contentPaneRef} className="lg:col-span-8 bg-white border border-[#E8E4D9] rounded-3xl p-6 shadow-sm min-h-[600px] flex flex-col justify-between font-sans">
                   {selectedLevelExam !== null ? (
                     <div>
                       <button
