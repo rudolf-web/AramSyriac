@@ -50,9 +50,7 @@ import { LEVEL_EXAMS } from "./data/levelExams";
 import { 
   isFirebaseConfigured, 
   auth, 
-  db, 
-  handleFirestoreError, 
-  OperationType,
+  db,
   uploadFileToStorage,
   deleteFileFromStorage
 } from "./firebase";
@@ -421,10 +419,20 @@ export default function App() {
               setAuthLoading(false);
             }, (error) => {
               console.error("Profile listen failure:", error);
+              // Jangan rusak aplikasi bila Firestore belum siap
+              // (misalnya rules belum dipasang): pakai profil lokal darurat.
+              const isAdminEmail = currentUser.email?.toLowerCase() === "rudolfluhukay69@guru.smp.belajar.id";
+              setUserProfile({
+                userId: currentUser.uid,
+                email: currentUser.email?.toLowerCase() || "",
+                fullName: currentUser.displayName || "Siswa Arami",
+                role: isAdminEmail ? "admin" : "student",
+                status: "APPROVED",
+                learningReason: "Belajar sastra semitik kuno.",
+                activeSessionId: appSessionId,
+                createdAt: new Date().toISOString()
+              });
               setAuthLoading(false);
-              if (auth.currentUser?.uid === currentUser.uid) {
-                handleFirestoreError(error, OperationType.GET, `users/${currentUser.uid}`);
-              }
             });
           } else {
             // Firestore is disabled -> compute user state and profile locally

@@ -66,13 +66,14 @@ export interface FirestoreErrorInfo {
 export const isFirebaseConfigured = true;
 
 let app: any = null;
-export let db: any = null; // Do not use Firestore for now
+export let db: any = null; // Firestore (diaktifkan di bawah saat init)
 export let auth: any = null;
 export let storage: any = null; // Do not use Storage for now
 
 try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
+  db = getFirestore(app); // Firestore AKTIF: profil, progres & berkas tersimpan di cloud
 } catch (error) {
   console.error("Gagal melakukan inisialisasi Firebase Auth:", error);
 }

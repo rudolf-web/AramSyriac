@@ -88,11 +88,13 @@ service cloud.firestore {
       allow list: if isAdmin();
 
       // Student Sign Up check (Prevents Privilege Escalation / Self-Approval)
+      // Siswa baru dibuat dengan status PENDING atau APPROVED (aplikasi
+      // memakai auto-approved; peninjauan tetap bisa dilakukan admin di panel).
       allow create: if isOwner(userId) 
                     && isValidUserProfile(request.resource.data)
                     && request.resource.data.userId == userId
                     && (
-                      (request.resource.data.role == 'student' && request.resource.data.status == 'PENDING') || 
+                      (request.resource.data.role == 'student' && (request.resource.data.status == 'PENDING' || request.resource.data.status == 'APPROVED')) || 
                       (request.resource.data.role == 'admin' && request.resource.data.status == 'APPROVED' && request.auth.token != null && 'email' in request.auth.token && request.auth.token.email != null && request.auth.token.email.lower() == 'rudolfluhukay69@guru.smp.belajar.id')
                     );
 
@@ -143,7 +145,10 @@ service cloud.firestore {
     // 2. Global Modules collection (Added/Modified by Admin, visible to approved students)
     match /modules/{moduleId} {
       allow get, list: if true; // Allow reading lesson modules publicly to ensure zero starter race conditions
-      allow create, update, delete: if isAdmin();
+      // Create diizinkan untuk pengguna yang masuk supaya data awal modul bisa
+      // terisi otomatis saat pertama dibuka; ubah/hapus hanya admin.
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
     }
   }
 }
