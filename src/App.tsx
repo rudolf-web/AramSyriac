@@ -38,6 +38,7 @@ import {
 import { syriacModules } from "./data/syriacModules";
 import { Keyboard } from "./components/Keyboard";
 import { VocabularyNotebook } from "./components/VocabularyNotebook";
+import PronunciationRecorder from "./components/PronunciationRecorder";
 import { AIAssistant } from "./components/AIAssistant";
 import { FileManager } from "./components/FileManager";
 import { AdminPanel } from "./components/AdminPanel";
@@ -2682,6 +2683,23 @@ export default function App() {
                           </div>
                         </div>
                       </div>
+
+                      {/* PRONUNCIATION PRACTICE: RECORD & LISTEN BACK */}
+                      <PronunciationRecorder
+                        moduleTitle={currentModule.title || `Modul ${currentModule.id}`}
+                        items={[
+                          ...(currentModule.examples || []).slice(0, 5).map((ex) => ({
+                            syriac: ex.syriac,
+                            translit: ex.translit,
+                            translation: ex.indonesian,
+                          })),
+                          ...(currentModule.vocabulary || []).slice(0, 4).map((v) => ({
+                            syriac: v.syriac,
+                            translit: v.translit,
+                            translation: v.meaning,
+                          })),
+                        ]}
+                      />
 
                       {/* ADMIN-POSTED MODULE MATERIALS & DOWNLOADS (PDF, WORD, EXCEL, MP3, MP4) */}
                       <div className="pt-4 border-t border-[#F1EEE6] space-y-3 font-sans">
