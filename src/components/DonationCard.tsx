@@ -1,18 +1,17 @@
-import React, { useState } from "react";
-import { Heart, QrCode, MessageCircle } from "lucide-react";
+import React from "react";
+import { Heart, ExternalLink, MessageCircle } from "lucide-react";
 
 // Donasi sukarela untuk Learn Syriac. Aplikasi tetap GRATIS untuk semua;
 // donasi seikhlasnya membantu biaya server dan pengembangan materi.
-// Gambar kode QRIS berada di public/qris.png (ditampilkan otomatis bila ada).
-//
+// Donasi lewat halaman Lynk.id (bayar dengan QRIS / e-wallet / virtual account).
+const LYNK_URL = "https://lynk.id/rudolf/08qejqowre1y";
+
 // Nomor WhatsApp admin (opsional, untuk konfirmasi donasi).
 // Format internasional tanpa tanda +, contoh: 6281234567890.
 // TODO: isi nomor WhatsApp Anda di sini. Kosongkan bila tidak perlu.
 const WA_NUMBER = "";
 
 export function DonationCard() {
-  const [qrisFailed, setQrisFailed] = useState(false);
-  const qrisUrl = (import.meta.env.BASE_URL || "/") + "qris.png";
   const waLink = WA_NUMBER
     ? "https://wa.me/" +
       WA_NUMBER +
@@ -37,36 +36,30 @@ export function DonationCard() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center gap-6">
-        {!qrisFailed ? (
-          <img
-            src={qrisUrl}
-            alt="Kode QRIS donasi Learn Syriac"
-            onError={() => setQrisFailed(true)}
-            className="w-48 h-48 object-contain bg-white border border-[#E8E4D9] rounded-2xl p-2 shrink-0"
-          />
-        ) : (
-          <div className="w-48 h-48 border-2 border-dashed border-[#D1CCBD] rounded-2xl p-6 text-center bg-[#F9F7F2]/60 flex flex-col items-center justify-center shrink-0">
-            <QrCode className="w-10 h-10 text-slate-300 mb-2" />
-            <p className="text-xs text-[#8A8471] leading-relaxed font-sans">
-              Kode QRIS segera tampil di sini.
-            </p>
-          </div>
-        )}
-
-        <div className="space-y-3 font-sans text-xs text-[#3D3A33] flex-1 w-full">
-          <p className="leading-relaxed">
-            <strong className="font-serif text-sm">Cara berdonasi:</strong>
-            <br />
-            1. Buka aplikasi bank atau e-wallet Anda.
-            <br />
-            2. Pindai kode QRIS di samping ini.
-            <br />
-            3. Masukkan nominal seikhlasnya, lalu bayar.
-          </p>
-          <p className="text-[#8A8471] leading-relaxed">
-            Nominal bebas — tidak ada jumlah minimum. Terima kasih atas dukungan Anda.
-          </p>
+      <div className="space-y-3 font-sans text-xs text-[#3D3A33]">
+        <p className="leading-relaxed">
+          <strong className="font-serif text-sm">Cara berdonasi:</strong>
+          <br />
+          1. Klik tombol di bawah ini.
+          <br />
+          2. Masukkan nominal seikhlasnya.
+          <br />
+          3. Bayar dengan QRIS, e-wallet, atau virtual account.
+        </p>
+        <p className="text-[#8A8471] leading-relaxed">
+          Nominal bebas — tidak ada jumlah minimum. Terima kasih atas dukungan Anda.
+        </p>
+        <div className="flex flex-wrap items-center gap-3 pt-1">
+          <a
+            href={LYNK_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 py-2.5 px-5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition-colors shadow-sm"
+          >
+            <Heart className="w-4 h-4 fill-white" />
+            Donasi via Lynk.id
+            <ExternalLink className="w-4 h-4" />
+          </a>
           {waLink && (
             <a
               href={waLink}
