@@ -1,4 +1,5 @@
 import React from "react";
+import { useLang } from "../lang";
 import { Heart, ExternalLink, MessageCircle } from "lucide-react";
 
 // Donasi sukarela untuk Learn Syriac. Aplikasi tetap GRATIS untuk semua;
@@ -12,11 +13,12 @@ const LYNK_URL = "https://lynk.id/rudolf/08qejqowre1y";
 const WA_NUMBER = "";
 
 export function DonationCard() {
+  const { t } = useLang();
   const waLink = WA_NUMBER
     ? "https://wa.me/" +
       WA_NUMBER +
       "?text=" +
-      encodeURIComponent("Halo, saya mau berdonasi untuk Learn Syriac. Berikut bukti donasinya:")
+      encodeURIComponent(t("donateWaMsg"))
     : "";
 
   return (
@@ -27,27 +29,26 @@ export function DonationCard() {
         </div>
         <div>
           <h3 className="font-bold text-lg sm:text-xl font-serif text-[#3D3A33]">
-            Dukung Learn Syriac
+            {t("donateTitle")}
           </h3>
           <p className="text-xs text-[#8A8471] leading-relaxed font-sans mt-1">
-            Aplikasi ini gratis untuk semua. Bila Anda terbantu dan ingin mendukung,
-            donasi seikhlasnya sangat berarti untuk biaya server dan pengembangan materi.
+            {t("donateSub")}
           </p>
         </div>
       </div>
 
       <div className="space-y-3 font-sans text-xs text-[#3D3A33]">
         <p className="leading-relaxed">
-          <strong className="font-serif text-sm">Cara berdonasi:</strong>
+          <strong className="font-serif text-sm">{t("donateHow")}</strong>
           <br />
-          1. Klik tombol di bawah ini.
+          {t("donateStep1")}
           <br />
-          2. Masukkan nominal seikhlasnya.
+          {t("donateStep2")}
           <br />
-          3. Bayar dengan QRIS, e-wallet, atau virtual account.
+          {t("donateStep3")}
         </p>
         <p className="text-[#8A8471] leading-relaxed">
-          Nominal bebas — tidak ada jumlah minimum. Terima kasih atas dukungan Anda.
+          {t("donateFree")}
         </p>
         <div className="flex flex-wrap items-center gap-3 pt-1">
           <a
@@ -57,7 +58,7 @@ export function DonationCard() {
             className="inline-flex items-center gap-2 py-2.5 px-5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition-colors shadow-sm"
           >
             <Heart className="w-4 h-4 fill-white" />
-            Donasi via Lynk.id
+            {t("donateBtn")}
             <ExternalLink className="w-4 h-4" />
           </a>
           {waLink && (
@@ -68,7 +69,7 @@ export function DonationCard() {
               className="inline-flex items-center gap-2 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors shadow-sm"
             >
               <MessageCircle className="w-4 h-4" />
-              Konfirmasi Donasi via WhatsApp
+              {t("donateWaBtn")}
             </a>
           )}
         </div>

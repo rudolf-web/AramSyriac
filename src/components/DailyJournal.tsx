@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLang } from "../lang";
 import { 
   BookOpen, 
   Trash2, 
@@ -26,6 +27,7 @@ interface DailyJournalProps {
 }
 
 export function DailyJournal({ userId, userFullName }: DailyJournalProps) {
+  const { lang, t } = useLang();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [content, setContent] = useState("");
   const [feeling, setFeeling] = useState<"paham" | "cukup" | "bingung">("paham");
@@ -49,13 +51,13 @@ export function DailyJournal({ userId, userFullName }: DailyJournalProps) {
         {
           id: "welcome-journal-entry",
           userId: userId,
-          date: new Date(Date.now() - 24 * 60 * 60 * 1000).toLocaleDateString("id-ID", {
+          date: new Date(Date.now() - 24 * 60 * 60 * 1000).toLocaleDateString(lang === "en" ? "en-US" : "id-ID", {
             weekday: "long",
             year: "numeric",
             month: "long",
             day: "numeric"
           }),
-          content: "Halo! Ini adalah Jurnal Harian saya pertama kali bergabung di Akademi Arami-Syriac. Saya siap mempelajari aksara Alap-Beth dan teks teologis Semitik kuno bersama Rudolf Luhukay.",
+          content: t("journalWelcome"),
           feeling: "paham"
         }
       ];
@@ -75,7 +77,7 @@ export function DailyJournal({ userId, userFullName }: DailyJournalProps) {
     e.preventDefault();
     if (!content.trim()) return;
 
-    const formattedDate = new Date().toLocaleDateString("id-ID", {
+    const formattedDate = new Date().toLocaleDateString(lang === "en" ? "en-US" : "id-ID", {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -96,12 +98,12 @@ export function DailyJournal({ userId, userFullName }: DailyJournalProps) {
     saveEntriesToStorage(updated);
     setContent("");
     setFeeling("paham");
-    setSuccessMessage("Entri Jurnal Harian Anda berhasil disimpan!");
+    setSuccessMessage(t("journalSaved"));
     setTimeout(() => setSuccessMessage(null), 3000);
   };
 
   const handleDeleteEntry = (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus refleksi jurnal ini?")) {
+    if (confirm(t("journalConfirmDelete"))) {
       const filtered = entries.filter(e => e.id !== id);
       saveEntriesToStorage(filtered);
     }
@@ -120,17 +122,17 @@ export function DailyJournal({ userId, userFullName }: DailyJournalProps) {
           <div className="flex items-center gap-2 text-[#5A5A40]">
             <PenTool className="w-5 h-5" />
             <h3 className="font-extrabold text-lg sm:text-xl font-serif text-[#3D3A33]">
-              Jurnal Harian & Refleksi Belajar
+              {t("journalTitle")}
             </h3>
           </div>
           <p className="text-xs text-[#8A8471]">
-            Tulis kesimpulan, kosakata baru, atau kesulitan belajar yang Anda hadapi hari ini.
+            {t("journalSub")}
           </p>
         </div>
 
         {/* Small Progress Hint */}
         <span className="text-[10px] bg-[#F1EEE6] text-[#5A5A40] font-bold px-3 py-1 rounded-full uppercase tracking-wider self-start sm:self-center">
-          Total Refleksi: {entries.length} Catatan
+          {t("journalTotal")} {entries.length} {t("journalNotes")}
         </span>
       </div>
 
@@ -147,12 +149,12 @@ export function DailyJournal({ userId, userFullName }: DailyJournalProps) {
         <form onSubmit={handleAddEntry} className="lg:col-span-5 space-y-4 bg-[#F1EEE6]/30 p-5 rounded-2xl border border-[#E8E4D9]/60">
           <h4 className="font-bold text-xs text-[#3D3A33] uppercase tracking-wider flex items-center gap-1.5">
             <PlusCircle className="w-4 h-4 text-[#5A5A40]" />
-            Tulis Catatan Hari Ini
+            {t("journalWriteToday")}
           </h4>
 
           <div className="space-y-1">
             <label className="text-[11px] font-bold text-[#8A8471] block">
-              Skala Pemahaman Hari Ini:
+              {t("journalScale")}
             </label>
             <div className="grid grid-cols-3 gap-2">
               <button
@@ -165,7 +167,7 @@ export function DailyJournal({ userId, userFullName }: DailyJournalProps) {
                 }`}
               >
                 <Smile className={`w-5 h-5 ${feeling === "paham" ? "text-emerald-600" : "text-slate-400"}`} />
-                <span>Paham</span>
+                <span>{t("journalUnderstood")}</span>
               </button>
 
               <button
@@ -178,7 +180,7 @@ export function DailyJournal({ userId, userFullName }: DailyJournalProps) {
                 }`}
               >
                 <Meh className={`w-5 h-5 ${feeling === "cukup" ? "text-amber-600" : "text-slate-400"}`} />
-                <span>Cukup</span>
+                <span>{t("journalOk")}</span>
               </button>
 
               <button
@@ -191,21 +193,21 @@ export function DailyJournal({ userId, userFullName }: DailyJournalProps) {
                 }`}
               >
                 <Frown className={`w-5 h-5 ${feeling === "bingung" ? "text-rose-600" : "text-slate-400"}`} />
-                <span>Bingung</span>
+                <span>{t("journalConfused")}</span>
               </button>
             </div>
           </div>
 
           <div className="space-y-1">
             <label className="text-[11px] font-bold text-[#8A8471] block">
-              Refleksi Belajar Anda:
+              {t("journalReflection")}
             </label>
             <textarea
               required
               rows={4}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Contoh: Hari ini saya berhasil menghafal 5 huruf konsonan baru (Alap, Beth, Gamal, Dalath, He) dan memahami struktur penulisan dari kanan ke kiri..."
+              placeholder={t("journalPh")}
               className="w-full bg-white border border-[#D1CCBD] rounded-xl p-3 outline-none focus:border-[#5A5A40] text-xs transition-colors resize-none placeholder-slate-400 leading-relaxed text-[#3D3A33]"
             />
           </div>
@@ -215,7 +217,7 @@ export function DailyJournal({ userId, userFullName }: DailyJournalProps) {
             className="w-full py-2.5 bg-[#5A5A40] hover:bg-[#494933] text-white font-bold rounded-xl text-xs transition-colors shadow flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <BookOpen className="w-4 h-4" />
-            Simpan Refleksi Jurnal
+            {t("journalSave")}
           </button>
         </form>
 
@@ -229,7 +231,7 @@ export function DailyJournal({ userId, userFullName }: DailyJournalProps) {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Cari refleksi sebelumnya..."
+              placeholder={t("journalSearchPh")}
               className="w-full bg-[#F1EEE6]/40 border border-[#D1CCBD] rounded-xl py-2 pl-9 pr-4 outline-none focus:border-[#5A5A40] text-xs transition-colors"
             />
           </div>
@@ -238,23 +240,23 @@ export function DailyJournal({ userId, userFullName }: DailyJournalProps) {
           <div className="flex-grow max-h-[320px] overflow-y-auto pr-2 space-y-3 scrollbar-thin">
             {filteredEntries.length === 0 ? (
               <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-[#D1CCBD] space-y-1">
-                <p className="text-xs font-bold text-[#8A8471]">Tidak ditemukan catatan refleksi.</p>
-                <p className="text-[10px] text-slate-400">Silakan tulis entri baru atau periksa filter pencarian Anda.</p>
+                <p className="text-xs font-bold text-[#8A8471]">{t("journalEmpty")}</p>
+                <p className="text-[10px] text-slate-400">{t("journalEmptyHint")}</p>
               </div>
             ) : (
               filteredEntries.map((entry) => {
                 let badgeBg = "bg-emerald-50 text-emerald-800 border-emerald-200";
                 let emojiIcon = <Smile className="w-3.5 h-3.5 text-emerald-600" />;
-                let badgeText = "Paham";
+                let badgeText = t("journalUnderstood");
 
                 if (entry.feeling === "cukup") {
                   badgeBg = "bg-amber-50 text-amber-800 border-amber-200";
                   emojiIcon = <Meh className="w-3.5 h-3.5 text-amber-600" />;
-                  badgeText = "Cukup";
+                  badgeText = t("journalOk");
                 } else if (entry.feeling === "bingung") {
                   badgeBg = "bg-rose-50 text-rose-800 border-rose-200";
                   emojiIcon = <Frown className="w-3.5 h-3.5 text-rose-600" />;
-                  badgeText = "Bingung";
+                  badgeText = t("journalConfused");
                 }
 
                 return (
@@ -278,7 +280,7 @@ export function DailyJournal({ userId, userFullName }: DailyJournalProps) {
                           type="button"
                           onClick={() => handleDeleteEntry(entry.id)}
                           className="p-1 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors duration-150 cursor-pointer"
-                          title="Hapus Jurnal"
+                          title={t("journalDelete")}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>

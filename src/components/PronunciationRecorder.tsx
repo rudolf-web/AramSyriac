@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useLang } from "../lang";
 import { Mic, Square, Play, RotateCcw, AlertTriangle } from "lucide-react";
 
 export interface PronunciationItem {
   syriac: string; // Syriac text to say
   translit: string; // Latin transliteration (pronunciation guide)
-  translation: string; // Indonesian meaning
+  translation: string; // Meaning in the active language (localized by App)
 }
 
 interface PronunciationRecorderProps {
@@ -17,6 +18,7 @@ interface PronunciationRecorderProps {
 // no automatic scoring here: the student records, plays it back, and compares
 // with the transliteration guide. Recordings live only in this page session.
 export default function PronunciationRecorder({ items, moduleTitle }: PronunciationRecorderProps) {
+  const { t } = useLang();
   const [recordingIdx, setRecordingIdx] = useState<number | null>(null);
   const [recordings, setRecordings] = useState<Record<number, string>>({});
   const [playingIdx, setPlayingIdx] = useState<number | null>(null);
@@ -55,7 +57,7 @@ export default function PronunciationRecorder({ items, moduleTitle }: Pronunciat
       setPlayingIdx(null);
     }
     if (!supported) {
-      setError("Browser ini belum mendukung perekaman suara. Coba Chrome, Edge, atau Safari terbaru.");
+      setError(t("pronUnsupported"));
       return;
     }
     try {
@@ -83,11 +85,11 @@ export default function PronunciationRecorder({ items, moduleTitle }: Pronunciat
       stopStream();
       setRecordingIdx(null);
       if (e && (e.name === "NotAllowedError" || e.name === "SecurityError")) {
-        setError("Izin mikrofon ditolak. Izinkan akses mikrofon di browser, lalu coba lagi.");
+        setError(t("pronMicDenied"));
       } else if (e && e.name === "NotFoundError") {
-        setError("Tidak ada mikrofon yang ditemukan di perangkat ini.");
+        setError(t("pronNoMic"));
       } else {
-        setError("Tidak bisa memulai perekaman. Coba lagi.");
+        setError(t("pronStartFail"));
       }
     }
   };
@@ -113,7 +115,7 @@ export default function PronunciationRecorder({ items, moduleTitle }: Pronunciat
     audio.onended = () => setPlayingIdx(null);
     audio.play().catch(() => {
       setPlayingIdx(null);
-      setError("Tidak bisa memutar rekaman. Coba lagi.");
+      setError(t("pronPlayFail"));
     });
   };
 
@@ -127,11 +129,10 @@ export default function PronunciationRecorder({ items, moduleTitle }: Pronunciat
         </span>
         <div>
           <h4 className="font-extrabold text-[#5A5A40] font-serif text-sm leading-tight">
-            Latihan Pengucapan — Rekam &amp; Dengarkan
+            {t("pronTitle")}
           </h4>
           <p className="text-[11px] text-[#8A8471]">
-            Modul {moduleTitle} — rekam suaramu, putar kembali, bandingkan dengan panduan
-            transliterasi.
+            {t("module")} {moduleTitle} {t("pronSubB")}
           </p>
         </div>
       </div>
@@ -140,8 +141,7 @@ export default function PronunciationRecorder({ items, moduleTitle }: Pronunciat
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800 flex gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>
-            Perekaman suara belum didukung browser ini. Coba <strong>Chrome, Edge, atau Safari
-            terbaru</strong> di HP atau laptop.
+            {t("pronUnsupportedBox")} <strong>{t("pronBrowsers")}</strong> {t("pronUnsupportedBoxB")}
           </span>
         </div>
       )}
@@ -165,7 +165,7 @@ export default function PronunciationRecorder({ items, moduleTitle }: Pronunciat
                     {item.syriac}
                   </p>
                   <p className="text-xs text-slate-600">{item.translit}</p>
-                  <p className="text-[11px] text-slate-500">Artinya: {item.translation}</p>
+                  <p className="text-[11px] text-slate-500">{t("means")} {item.translation}</p>
                 </div>
                 <span className="text-[10px] font-bold text-[#8A8471] bg-[#F1EEE6] px-2 py-1 rounded-full whitespace-nowrap">
                   {i + 1} / {items.length}
@@ -179,7 +179,7 @@ export default function PronunciationRecorder({ items, moduleTitle }: Pronunciat
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 text-white text-[11px] font-bold rounded-lg cursor-pointer transition-colors animate-pulse"
                   >
                     <Square className="w-3.5 h-3.5" />
-                    Berhenti — sedang merekam…
+                    {t("pronStopRec")}
                   </button>
                 ) : (
                   <button
@@ -188,7 +188,7 @@ export default function PronunciationRecorder({ items, moduleTitle }: Pronunciat
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-[#5A5A40] hover:bg-[#4C4C36] text-white text-[11px] font-bold rounded-lg cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Mic className="w-3.5 h-3.5" />
-                    {hasRecording ? "Rekam Ulang" : "Rekam Suaramu"}
+                    {hasRecording ? t("pronRerecord") : t("pronRecord")}
                   </button>
                 )}
                 {hasRecording && !isRecording && (
@@ -197,13 +197,13 @@ export default function PronunciationRecorder({ items, moduleTitle }: Pronunciat
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-[#EBE7DC] hover:bg-[#D1CCBD] text-[#3D3A33] text-[11px] font-bold rounded-lg cursor-pointer transition-colors"
                   >
                     {isPlaying ? <Square className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                    {isPlaying ? "Berhenti" : "Putar Rekaman"}
+                    {isPlaying ? t("pronStop") : t("pronPlay")}
                   </button>
                 )}
                 {hasRecording && !isRecording && (
                   <span className="flex items-center gap-1 px-2 py-1.5 text-[11px] font-bold text-emerald-700">
                     <RotateCcw className="w-3.5 h-3.5" />
-                    Rekaman tersimpan
+                    {t("pronSaved")}
                   </span>
                 )}
               </div>
@@ -213,9 +213,7 @@ export default function PronunciationRecorder({ items, moduleTitle }: Pronunciat
       </div>
 
       <p className="text-[10px] text-[#8A8471] leading-relaxed">
-        Rekaman hanya tersimpan selama halaman ini dibuka — kalau halaman ditutup atau di-refresh,
-        rekaman hilang. Ucapkan perlahan mengikuti transliterasi di atas, lalu dengarkan kembali
-        untuk memeriksa pengucapanmu.
+        {t("pronNote")}
       </p>
     </div>
   );

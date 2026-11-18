@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLang } from "../lang";
 import { 
   LogIn, 
   UserPlus, 
@@ -34,6 +35,7 @@ interface AramiAuthGateProps {
 }
 
 export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
+  const { t } = useLang();
   const [activeForm, setActiveForm] = useState<"signin" | "signup" | "admin" | "forgot">("signin");
   
   // Input fields
@@ -63,11 +65,11 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
       try {
         if (activeForm === "forgot") {
           await sendPasswordResetEmail(auth, lowercaseEmail);
-          setSuccessMsg("Tautan penyetelan ulang kata sandi telah berhasil dikirim ke " + lowercaseEmail + ". Silakan periksa folder kotak masuk atau spam email Anda.");
+          setSuccessMsg(t("authResetSent") + lowercaseEmail + t("authResetSentB"));
           setActiveForm("signin");
         } else if (activeForm === "signup") {
           if (!fullName.trim() || !learningReason.trim()) {
-            throw new Error("Mohon lengkapi seluruh kolom pendaftaran.");
+            throw new Error(t("authFillAll"));
           }
           // Register Firebase User
           const res = await createUserWithEmailAndPassword(auth, lowercaseEmail, password);
@@ -91,25 +93,25 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
             } catch (dbErr) {
               handleFirestoreError(dbErr, OperationType.CREATE, path);
             }
-            setSuccessMsg("Pendaftaran berhasil diajukan! Formulir Anda sekarang sedang ditinjau oleh Rudolf A. Luhukay.");
+            setSuccessMsg(t("authSignupReview"));
           } else {
             localStorage.setItem(`arami_user_profile_${userId}`, JSON.stringify(userProfile));
-            setSuccessMsg("Pendaftaran berhasil! Akun Anda aktif. Silakan lakukan masuk.");
+            setSuccessMsg(t("authSignupActive"));
           }
           setActiveForm("signin");
         } else {
           // Standard student/admin sign-in (Unified)
           await signInWithEmailAndPassword(auth, lowercaseEmail, password);
-          setSuccessMsg("Berhasil masuk ke ruang kelas!");
+          setSuccessMsg(t("authSignedIn"));
         }
       } catch (err: any) {
         console.error("Auth error:", err);
         let msg = err.message;
-        if (err.code === "auth/user-not-found") msg = "Akun tidak ditemukan. Silakan lakukan pendaftaran.";
-        if (err.code === "auth/wrong-password") msg = "Kata sandi salah. Silakan coba kembali.";
-        if (err.code === "auth/invalid-credential") msg = "Email atau kata sandi Anda salah. Silakan periksa kembali.";
-        if (err.code === "auth/email-already-in-use") msg = "Alamat email sudah digunakan oleh anggota lain.";
-        setErrorMsg(msg || "Gagal memproses permintaan otentikasi.");
+        if (err.code === "auth/user-not-found") msg = t("authNoAccount");
+        if (err.code === "auth/wrong-password") msg = t("authWrongPass");
+        if (err.code === "auth/invalid-credential") msg = t("authBadCred");
+        if (err.code === "auth/email-already-in-use") msg = t("authEmailUsed");
+        setErrorMsg(msg || t("authFailed"));
       } finally {
         setLoading(false);
       }
@@ -118,21 +120,21 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
       setTimeout(() => {
         const mockUid = "sandbox_" + btoa(lowercaseEmail).slice(0, 8);
         if (activeForm === "forgot") {
-          setSuccessMsg("Mode Sandbox: Tautan penyetelan ulang disimulasikan dikirim ke " + lowercaseEmail + ". Di Mode Sandbox, silakan langsung masuk menggunakan kata sandi apa saja!");
+          setSuccessMsg(t("authSandboxReset") + lowercaseEmail + t("authSandboxResetB"));
           setActiveForm("signin");
         } else if (activeForm === "signup") {
           const mockProfile = {
             userId: mockUid,
             email: lowercaseEmail,
-            fullName: fullName || "Siswa Baru Sandbox",
+            fullName: fullName || t("authSandboxNew"),
             role: "student",
             status: "PENDING",
-            learningReason: learningReason || "Mempelajari manuskrip Alkitab Aram",
+            learningReason: learningReason || t("authSandboxBible"),
             adminFeedback: "",
             createdAt: new Date().toISOString()
           };
           localStorage.setItem(`arami_sb_profile_${mockUid}`, JSON.stringify(mockProfile));
-          setSuccessMsg("Akun Sandbox sukses didaftarkan (PENDING)! Silakan melakukan login.");
+          setSuccessMsg(t("authSandboxRegistered"));
           setActiveForm("signin");
         } else {
           // Unified Sign in - Check Admin or student in Sandbox
@@ -164,10 +166,10 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
               parsedProfile = {
                 userId: mockUid,
                 email: lowercaseEmail,
-                fullName: lowercaseEmail.split("@")[0].toUpperCase() + " (Siswa Sandbox)",
+                fullName: lowercaseEmail.split("@")[0].toUpperCase() + t("authSandboxSuffix"),
                 role: "student",
                 status: "PENDING", // default to pending for demo!
-                learningReason: "Belajar tata bahasa Semit dari nol",
+                learningReason: t("authSandboxReason"),
                 adminFeedback: "",
                 createdAt: new Date().toISOString()
               };
@@ -203,10 +205,10 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
         const userProfile = {
           userId: res.user.uid,
           email: emailVal,
-          fullName: res.user.displayName || "Siswa Arami Google",
+          fullName: res.user.displayName || t("authGoogleStudent"),
           role: isAdminEmail ? "admin" : "student",
           status: "APPROVED", // Auto-approved when using Auth-Only
-          learningReason: "Belajar di Akademi",
+          learningReason: t("authGoogleReason"),
           createdAt: new Date().toISOString()
         };
         if (db) {
@@ -214,9 +216,9 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
         } else {
           localStorage.setItem(`arami_user_profile_${res.user.uid}`, JSON.stringify(userProfile));
         }
-        setSuccessMsg("Sukses sign in menggunakan akun Google!");
+        setSuccessMsg(t("authGoogleOk"));
       } catch (err: any) {
-        setErrorMsg(err.message || "Gagal masuk lewat Google Authentication.");
+        setErrorMsg(err.message || t("authGoogleFail"));
       } finally {
         setLoading(false);
       }
@@ -226,16 +228,16 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
       const mockUser = {
         uid: mockUid,
         email: "rudolf.student@gmail.com",
-        displayName: "Siswa Google Sandbox",
+        displayName: t("authGoogleSandbox"),
         isDemo: true
       };
       const mockProfile = {
         userId: mockUid,
         email: "rudolf.student@gmail.com",
-        fullName: "Siswa Google Sandbox",
+        fullName: t("authGoogleSandbox"),
         role: "student",
         status: "APPROVED",
-        learningReason: "Kebutuhan liturgi dan hermeneutika",
+        learningReason: t("authSandboxLiturgy"),
         createdAt: new Date().toISOString()
       };
       localStorage.setItem("arami_demo_auth_user", JSON.stringify(mockUser));
@@ -260,13 +262,13 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
             </div>
             <div className="space-y-2">
               <span className="text-[10px] uppercase font-bold tracking-widest bg-white/15 px-3 py-1 rounded-full inline-block">
-                Sistem LMS Terpadu
+                {t("authBadge")}
               </span>
               <h2 className="text-3xl font-extrabold font-serif leading-tight text-white">
                 Syriac-Aramaic Academy
               </h2>
               <p className="text-[#E8E4D9] text-xs leading-relaxed font-light">
-                Selamat datang di platform akademik digital khusus pembelajaran aksara dan tata bahasa Aram-Syriac dalam pengantar bahasa Indonesia.
+                {t("authHero")}
               </p>
             </div>
 
@@ -276,8 +278,8 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
                   <BookOpen className="w-3 h-3 text-[#EBE7DC]" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold">Modul Terstruktur Berkelanjutan</h4>
-                  <p className="text-[10px] text-slate-300">Kurikulum komprehensif dari dasar abjad Aram hingga puisi liturgi klasik.</p>
+                  <h4 className="text-xs font-bold">{t("authFeatTitle")}</h4>
+                  <p className="text-[10px] text-slate-300">{t("authFeatText")}</p>
                 </div>
               </div>
 
@@ -287,7 +289,7 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
 
           <div className="pt-8 border-t border-[#F9F7F2]/10 mt-8 relative z-10">
             <p className="text-[10px] text-[#EBE7DC]/80 italic">
-              "Kuasai keindahan linguistik timur tengah klasik bersama bimbingan akademis murni."
+              "{t("authQuote")}"
             </p>
             <span className="text-[9px] block text-amber-300 font-bold tracking-wider mt-1 uppercase font-serif">
               — Rudolf A. Luhukay, Direktur Akademi
@@ -300,14 +302,14 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
           
           <div className="space-y-2">
             <h3 className="text-2xl font-bold font-serif text-[#3D3A33]">
-              {activeForm === "signin" && "Selamat Datang di Portal"}
-              {activeForm === "signup" && "Ajukan Pendaftaran Anggota Baru"}
-              {activeForm === "forgot" && "Atur Ulang Kata Sandi"}
+              {activeForm === "signin" && t("authWelcome")}
+              {activeForm === "signup" && t("authSignupTitle")}
+              {activeForm === "forgot" && t("authForgotTitle")}
             </h3>
             <p className="text-xs text-[#8A8471]">
-              {activeForm === "signin" && "Silakan masuk dengan email terdaftar Anda untuk melihat silabus & materi."}
-              {activeForm === "signup" && "Mohon isi formulir motivasi belajar secara jujur untuk peninjauan Rudolf Luhukay."}
-              {activeForm === "forgot" && "Masukkan alamat email terdaftar Anda untuk menerima tautan instruksi penyetelan ulang kata sandi."}
+              {activeForm === "signin" && t("authSigninSub")}
+              {activeForm === "signup" && t("authSignupSub")}
+              {activeForm === "forgot" && t("authForgotSub")}
             </p>
           </div>
 
@@ -331,7 +333,7 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
             {/* Input Nama Lengkap (Registration ONLY) */}
             {activeForm === "signup" && (
               <div className="space-y-1">
-                <label className="text-xs font-bold text-[#8A8471] block">Nama Lengkap (Siswa):</label>
+                <label className="text-xs font-bold text-[#8A8471] block">{t("authNameLabel")}</label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
@@ -339,7 +341,7 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Contoh: Rudolf Augustinus"
+                    placeholder={t("authNamePh")}
                     className="w-full bg-[#F1EEE6]/30 border border-[#D1CCBD] rounded-xl py-2.5 pl-10 pr-4 outline-none focus:border-[#5A5A40] text-xs transition-colors"
                   />
                 </div>
@@ -348,7 +350,7 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
 
             {/* Email Address Input */}
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#8A8471] block">Alamat Surat Elektronik (Email):</label>
+              <label className="text-xs font-bold text-[#8A8471] block">{t("authEmailLabel")}</label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
@@ -356,7 +358,7 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Contoh: nama@domain.com"
+                  placeholder={t("authEmailPh")}
                   className="w-full bg-[#F1EEE6]/30 border border-[#D1CCBD] rounded-xl py-2.5 pl-10 pr-4 outline-none focus:border-[#5A5A40] text-xs transition-colors"
                 />
               </div>
@@ -366,14 +368,14 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
             {activeForm !== "forgot" && (
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-bold text-[#8A8471] block">Kata Sandi (Min 6 Karakter):</label>
+                  <label className="text-xs font-bold text-[#8A8471] block">{t("authPassLabel")}</label>
                   {activeForm === "signin" && (
                     <button
                       type="button"
                       onClick={() => { setActiveForm("forgot"); setErrorMsg(null); setSuccessMsg(null); }}
                       className="text-[11px] text-[#5A5A40] hover:underline font-medium cursor-pointer"
                     >
-                      Lupa kata sandi?
+                      {t("authForgotLink")}
                     </button>
                   )}
                 </div>
@@ -395,12 +397,12 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
             {/* Learning Reason (Registration ONLY) */}
             {activeForm === "signup" && (
               <div className="space-y-1">
-                <label className="text-xs font-bold text-[#8A8471] block">Mengapa Anda Ingin Belajar Bahasa Aram Syriac?:</label>
+                <label className="text-xs font-bold text-[#8A8471] block">{t("authReasonLabel")}</label>
                 <textarea
                   required
                   value={learningReason}
                   onChange={(e) => setLearningReason(e.target.value)}
-                  placeholder="Sebutkan tujuan Anda bergabung (misal: Penelitian teologis, minat linguistik Semit, rujukan manuskrip sejarah...)"
+                  placeholder={t("authReasonPh")}
                   rows={3}
                   className="w-full bg-[#F1EEE6]/30 border border-[#D1CCBD] rounded-xl p-3 outline-none focus:border-[#5A5A40] text-xs transition-colors resize-none"
                 />
@@ -410,8 +412,8 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
             {/* Mode Sandbox Notification for testing simplicity */}
             {!isFirebaseConfigured && (
               <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-[10px] text-amber-900 leading-relaxed font-sans">
-                <strong>💡 Info Mode Demo Sandbox:</strong> Anda dapat menggunakan email mana pun untuk simulasi. 
-                Untuk masuk admin, gunakan email <code>rudolfluhukay69@guru.smp.belajar.id</code> (kata sandi bebas).
+                <strong>{t("authSandboxNote")}</strong> {t("authSandboxNoteB")} 
+                <code>rudolfluhukay69@guru.smp.belajar.id</code> {t("authSandboxNoteC")}
               </div>
             )}
 
@@ -423,13 +425,13 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Mengontak Pusat Data Kelas...
+                  {t("authLoading")}
                 </>
               ) : (
                 <>
-                  {activeForm === "signin" && "Masuk Kelas Sastra"}
-                  {activeForm === "signup" && "Ajukan Formulir Keanggotaan"}
-                  {activeForm === "forgot" && "Kirim Tautan Atur Ulang"}
+                  {activeForm === "signin" && t("authSigninBtn")}
+                  {activeForm === "signup" && t("authSignupBtn")}
+                  {activeForm === "forgot" && t("authForgotBtn")}
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -438,26 +440,26 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
             {/* Footer switcher links */}
             {activeForm === "signin" && (
               <div className="text-center pt-2 font-sans text-xs">
-                <span className="text-[#8A8471]">Siswa baru dan belum memiliki akun? </span>
+                <span className="text-[#8A8471]">{t("authNewHere")} </span>
                 <button
                   type="button"
                   onClick={() => { setActiveForm("signup"); setErrorMsg(null); setSuccessMsg(null); }}
                   className="text-[#5A5A40] hover:underline font-bold cursor-pointer"
                 >
-                  Daftar / Registrasi Di Sini
+                  {t("authRegisterHere")}
                 </button>
               </div>
             )}
 
             {activeForm === "signup" && (
               <div className="text-center pt-2 font-sans text-xs">
-                <span className="text-[#8A8471]">Sudah terdaftar sebagai siswa? </span>
+                <span className="text-[#8A8471]">{t("authHaveAccount")} </span>
                 <button
                   type="button"
                   onClick={() => { setActiveForm("signin"); setErrorMsg(null); setSuccessMsg(null); }}
                   className="text-[#5A5A40] hover:underline font-bold cursor-pointer"
                 >
-                  Masuk / Login Di Sini
+                  {t("authLoginHere")}
                 </button>
               </div>
             )}
@@ -469,7 +471,7 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
                   onClick={() => { setActiveForm("signin"); setErrorMsg(null); setSuccessMsg(null); }}
                   className="text-xs text-[#5A5A40] hover:underline font-bold cursor-pointer"
                 >
-                  Kembali ke Halaman Masuk
+                  {t("authBackSignin")}
                 </button>
               </div>
             )}
@@ -479,7 +481,7 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
           <div className="space-y-4 font-sans text-xs">
             <div className="relative flex py-1 items-center">
               <div className="flex-grow border-t border-[#E8E4D9]"></div>
-              <span className="flex-shrink mx-4 text-xs text-slate-400">atau</span>
+              <span className="flex-shrink mx-4 text-xs text-slate-400">{t("authOr")}</span>
               <div className="flex-grow border-t border-[#E8E4D9]"></div>
             </div>
 
@@ -507,7 +509,7 @@ export function AramiAuthGate({ onSuccess }: AramiAuthGateProps) {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              Lanjutkan dengan Google
+              {t("authGoogleBtn")}
             </button>
           </div>
 

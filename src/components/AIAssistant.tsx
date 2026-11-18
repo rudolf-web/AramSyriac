@@ -3,12 +3,17 @@ import { Send, Bot, User, Sparkles, MessageSquare, AlertCircle } from "lucide-re
 import ReactMarkdown from "react-markdown";
 import { ChatMessage } from "../types";
 
-export function AIAssistant() {
+const WELCOME_ID =
+  "Shlomo! Halo! Saya adalah Tutor AI Arami, asisten pribadi Anda untuk belajar bahasa Aram Syriac. Anda bisa bertanya tentang kosa kata, tata bahasa Barat (Serto) atau Timur (Madnhaya), cara menerjemahkan dari Indonesia ke Aram, atau menganalisis teks kuno. Silakan ajukan pertanyaan Anda!";
+const WELCOME_EN =
+  "Shlomo! Hello! I am Tutor AI Arami, your personal assistant for learning Classical Syriac Aramaic. You can ask about vocabulary, Western (Serto) or Eastern (Madnhaya) grammar, how to translate from English into Aramaic, or how to analyse ancient texts. Please ask your question!";
+
+export function AIAssistant({ lang = "id" }: { lang?: "id" | "en" }) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
       sender: "bot",
-      text: "Shlomo! Halo! Saya adalah Tutor AI Arami, asisten pribadi Anda untuk belajar bahasa Aram Syriac. Anda bisa bertanya tentang kosa kata, tata bahasa Barat (Serto) atau Timur (Madnhaya), cara menerjemahkan dari Indonesia ke Aram, atau menganalisis teks kuno. Silakan ajukan pertanyaan Anda!",
+      text: lang === "en" ? WELCOME_EN : WELCOME_ID,
       timestamp: new Date()
     }
   ]);
@@ -17,16 +22,38 @@ export function AIAssistant() {
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const presetPrompts = [
-    "Terjemahkan 'Damai Sejahtera dan Kasih' ke bahasa Aram",
-    "Jelaskan huruf Alap, Beth, Gamal secara singkat",
-    "Bagaimana menulis 'Rumahku adalah istanaku' dalam naskah Syriac?",
-    "Jelaskan arti dari kata 'Alaha' (Tuhan)"
-  ];
+  const presetPrompts =
+    lang === "en"
+      ? [
+          "Translate 'Peace and Love' into Aramaic",
+          "Briefly explain the letters Alap, Beth, Gamal",
+          "How do I write 'My home is my castle' in Syriac script?",
+          "Explain the meaning of the word 'Alaha' (God)",
+        ]
+      : [
+          "Terjemahkan 'Damai Sejahtera dan Kasih' ke bahasa Aram",
+          "Jelaskan huruf Alap, Beth, Gamal secara singkat",
+          "Bagaimana menulis 'Rumahku adalah istanaku' dalam naskah Syriac?",
+          "Jelaskan arti dari kata 'Alaha' (Tuhan)",
+        ];
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Keep the welcome message in step with the app language, until the
+  // user has started a conversation (only the welcome message is present).
+  useEffect(() => {
+    setMessages((prev) => {
+      if (prev.length === 1 && prev[0].id === "welcome") {
+        const welcomeText = lang === "en" ? WELCOME_EN : WELCOME_ID;
+        if (prev[0].text !== welcomeText) {
+          return [{ ...prev[0], text: welcomeText }];
+        }
+      }
+      return prev;
+    });
+  }, [lang]);
 
   const handleSendMessage = async (textToSend: string) => {
     if (!textToSend.trim() || isLoading) return;
@@ -52,6 +79,7 @@ export function AIAssistant() {
         },
         body: JSON.stringify({
           prompt: textToSend,
+          lang,
           history: messages.map(m => ({
             role: m.sender === "user" ? "user" : "model",
             text: m.text
@@ -60,7 +88,8 @@ export function AIAssistant() {
       });
 
       if (!response.ok) {
-        let serverErrorMessage = "Gagal terhubung dengan server Tutor AI.";
+        let serverErrorMessage =
+          lang === "en" ? "Could not connect to the Tutor AI server." : "Gagal terhubung dengan server Tutor AI.";
         try {
           const errData = await response.json();
           if (errData && errData.reply) {
@@ -76,18 +105,26 @@ export function AIAssistant() {
       const botMsg: ChatMessage = {
         id: `bot-${Date.now()}`,
         sender: "bot",
-        text: data.reply || "Maaf, saya tidak menerima respons yang valid.",
+        text:
+          data.reply ||
+          (lang === "en" ? "Sorry, I did not receive a valid response." : "Maaf, saya tidak menerima respons yang valid."),
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, botMsg]);
     } catch (err: any) {
       console.error(err);
-      setErrorStatus(err.message || "Terjadi kesalahan koneksi.");
+      setErrorStatus(err.message || (lang === "en" ? "A connection error occurred." : "Terjadi kesalahan koneksi."));
       const botErrorMsg: ChatMessage = {
         id: `bot-err-${Date.now()}`,
         sender: "bot",
-        text: err.message ? `Maaf, koneksi atau proses AI terhambat: ${err.message}` : "Maaf, koneksi ke server AI terganggu. Silakan cek file .env Anda atau coba sesaat lagi.",
+        text: err.message
+          ? lang === "en"
+            ? `Sorry, the AI connection or process was interrupted: ${err.message}`
+            : `Maaf, koneksi atau proses AI terhambat: ${err.message}`
+          : lang === "en"
+            ? "Sorry, the connection to the AI server was interrupted. Please try again in a moment."
+            : "Maaf, koneksi ke server AI terganggu. Silakan cek file .env Anda atau coba sesaat lagi.",
         timestamp: new Date()
       };
       setMessages(prev => [...prev, botErrorMsg]);
@@ -106,12 +143,12 @@ export function AIAssistant() {
           </div>
           <div>
             <h3 className="font-semibold text-sm md:text-base flex items-center gap-2 font-serif text-[#F9F7F2]">
-              Asisten AI Syriac Tutor
+              {lang === "en" ? "Syriac Tutor AI Assistant" : "Asisten AI Syriac Tutor"}
               <span className="text-[10px] bg-[#4D4D36]/20 text-[#EBE7DC] px-2 py-0.5 rounded border border-[#EBE7DC]/30 font-mono font-bold">
                 GEMINI 3.5
               </span>
             </h3>
-            <p className="text-slate-100/90 text-xs font-serif">Aktif merespons kueri tata bahasa Aram secara langsung</p>
+            <p className="text-slate-100/90 text-xs font-serif">{lang === "en" ? "Actively answering Syriac grammar questions in real time" : "Aktif merespons kueri tata bahasa Aram secara langsung"}</p>
           </div>
         </div>
         <Sparkles className="w-5 h-5 text-[#EBE7DC] animate-pulse" />
@@ -223,7 +260,7 @@ export function AIAssistant() {
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder="Tanyakan tata bahasa Aram..."
+          placeholder={lang === "en" ? "Ask about Syriac grammar..." : "Tanyakan tata bahasa Aram..."}
           disabled={isLoading}
           className="flex-1 bg-white border border-[#D1CCBD] outline-none rounded-xl px-4 py-2 text-sm focus:border-[#5A5A40] focus:ring-2 focus:ring-[#F1EEE6] transition-all"
         />
