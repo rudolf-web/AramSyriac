@@ -301,13 +301,13 @@ export const modulesB1: Module[] = [
       },
       {
         id: 4402,
-        question: "Dialek Barat (Serto) melfalkan tanda vokal Zqapha sebagai...",
+        question: "Dialek Barat (Serto) melafalkan tanda vokal Zqapha sebagai...",
         questionEn: "The Western dialect (Serto) pronounces the vowel sign Zqapha as...",
         options: ["Vokal 'a' pendek", "Vokal 'o' bulat", "Vokal 'i' renggang", "Vokal 'u' berat"],
         optionsEn: ["A short 'a' vowel", "A round 'o' vowel", "A lax 'i' vowel", "A heavy 'u' vowel"],
         correctAnswer: "Vokal 'o' bulat",
         correctAnswerEn: "A round 'o' vowel",
-        explanation: "Di Barat Barat (Barat), Zqapha dibunyikan sebagai 'o' (misal: Shlomo).",
+        explanation: "Di dialek Barat, Zqapha dibunyikan sebagai 'o' (misal: Shlomo).",
         explanationEn: "In the West, Zqapha is pronounced as 'o' (for example: Shlomo)."
       },
       {
@@ -355,7 +355,7 @@ export const modulesB1: Module[] = [
     summaryEn: "Understanding the structure of the intensive passive Ethpaal conjugation.",
     introduction: "Keluarga verba kategorial Ethpaal melambangkan bentuk pasif reflektif dari pola aktif Pael (intensif).",
     introductionEn: "The Ethpaal verb family represents the passive-reflexive form of the active Pael (intensive) pattern.",
-    content: "Dibentuk dengan menyematkan prefiks 'Eth-' (ܐܬ) dipadu dengan vokal ganda 'a' tebal di tengah verba.\nContoh perbandingan:\n- Shabbah (Pael): Memuji.\n- Ethshabbah (Ethpaal): Telah mulia / Dipuji berat.\n- Qaddesh (Pael): Menyucikan.\n- Ethqaddash (Ethpaal): Telah disucikan gila-gilaan.",
+    content: "Dibentuk dengan menyematkan prefiks 'Eth-' (ܐܬ) dipadu dengan vokal ganda 'a' tebal di tengah verba.\nContoh perbandingan:\n- Shabbah (Pael): Memuji.\n- Ethshabbah (Ethpaal): Telah mulia / Dipuji berat.\n- Qaddesh (Pael): Menyucikan.\n- Ethqaddash (Ethpaal): Telah disucikan sepenuhnya.",
     contentEn: "It is formed by attaching the prefix 'Eth-' (ܐܬ) together with a thick double 'a' vowel in the middle of the verb.\nComparison examples:\n- Shabbah (Pael): To praise.\n- Ethshabbah (Ethpaal): Has been glorified / Has been greatly praised.\n- Qaddesh (Pael): To sanctify.\n- Ethqaddash (Ethpaal): Has been sanctified intensely.",
     keyRules: [
       "Ethpaal mempertahankan geminasi huruf kedua layaknya Pael aktif.",
@@ -497,9 +497,9 @@ export const modulesB1: Module[] = [
         id: 4604,
         question: "Apakah arti dari 'Raza rabo hu'?",
         questionEn: "What does 'Raza rabo hu' mean?",
-        options: ["Raja telah pergi", "Ini adalah misteri/rahsa yang agung", "Airnya sangat jernih", "Rumah yang besar"],
+        options: ["Raja telah pergi", "Ini adalah misteri/rahasia yang agung", "Airnya sangat jernih", "Rumah yang besar"],
         optionsEn: ["The king has gone", "This is a great mystery", "The water is very clear", "A large house"],
-        correctAnswer: "Ini adalah misteri/rahsa yang agung",
+        correctAnswer: "Ini adalah misteri/rahasia yang agung",
         correctAnswerEn: "This is a great mystery",
         explanation: "Raza = misteri, rabo = agung/besar, hu = dia (is). Berarti 'Misteri agung hal ini'.",
         explanationEn: "Raza = mystery, rabo = great/large, hu = he (is). It means 'This is a great mystery'."
@@ -826,9 +826,9 @@ export const modulesB1: Module[] = [
         id: 5003,
         question: "Kemampuan menguraikan kalimat naskah Peshitta orisinil mengimplikasikan penguasaan...",
         questionEn: "The ability to analyse an original Peshitta sentence implies mastery of...",
-        options: ["Hanya kosakata", "Pemahaman gramatikal, sintaksis melingkat, dan kosa kata terpadu", "Kecepatan berlari", "Metode menulis angka belasan saja"],
+        options: ["Hanya kosakata", "Pemahaman gramatikal, sintaksis berlapis, dan kosa kata terpadu", "Kecepatan berlari", "Metode menulis angka belasan saja"],
         optionsEn: ["Vocabulary only", "Integrated grammatical understanding, layered syntax, and vocabulary", "Running speed", "Only the method of writing teen numbers"],
-        correctAnswer: "Pemahaman gramatikal, sintaksis melingkat, dan kosa kata terpadu",
+        correctAnswer: "Pemahaman gramatikal, sintaksis berlapis, dan kosa kata terpadu",
         correctAnswerEn: "Integrated grammatical understanding, layered syntax, and vocabulary",
         explanation: "Membaca teks orisinil Peshitta membutuhkan keterkaitan seluruh materi A1 hingga B1.",
         explanationEn: "Reading an original Peshitta text requires connecting everything from A1 to B1."

@@ -788,7 +788,7 @@ export const modulesA1: Module[] = [
       },
       {
         id: 903,
-        question: "Bagaimana menterjemahkan 'kepada sang raja' jika raja adalsh 'Malka' ?",
+        question: "Bagaimana menterjemahkan 'kepada sang raja' jika raja adalah 'Malka' ?",
         questionEn: "How do you translate 'to the king' if king is 'Malka'?",
         options: ["b-Malka", "l-Malka", "d-Malka", "men Malka"],
         optionsEn: ["b-Malka", "l-Malka", "d-Malka", "men Malka"],
@@ -1245,8 +1245,8 @@ export const modulesA1: Module[] = [
       },
       {
         id: 1405,
-        question: "Apakah arti dari kata dasar 'Tob' (ܬܘb)?",
-        questionEn: "What does the root word 'Tob' (ܬܘb) mean?",
+        question: "Apakah arti dari kata dasar 'Tob' (ܬܘܒ)?",
+        questionEn: "What does the root word 'Tob' (ܬܘܒ) mean?",
         options: ["Makanlah!", "Bertobatlah! / Kembalilah!", "Mati!", "Dengarlah!"],
         optionsEn: ["Eat!", "Repent! / Return!", "Die!", "Listen!"],
         correctAnswer: "Bertobatlah! / Kembalilah!",

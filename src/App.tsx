@@ -121,7 +121,7 @@ function renderModuleEmbed(embed: string | undefined, tr: (key: string) => strin
               allowFullScreen
               loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              title={lang === "en" ? "Integrated Learning Media" : "Media Pembelajaran Terintegrasi"}
+              title={tr("embedFrameTitle")}
             />
           </div>
         </div>
@@ -364,6 +364,7 @@ const UI_STRINGS = {
   confirmDeleteAttach: { id: "Hapus lampiran materi rujukan ini?", en: "Delete this reference material attachment?" },
   // ---- Embedded material helper ----
   embedTitle: { id: "Materi Multimedia & Rekomendasi Guru", en: "Multimedia Material & Teacher Recommendations" },
+  embedFrameTitle: { id: "Media Pembelajaran Terintegrasi", en: "Integrated Learning Media" },
   embedIntegrated: { id: "Semat Terpadu", en: "Integrated Embed" },
   embedYoutube: { id: "Video YouTube", en: "YouTube Video" },
   embedRefSite: { id: "Situs Rujukan / Pranala Luar", en: "Reference Site / External Link" },
@@ -860,6 +861,10 @@ export default function App() {
   const [isLevelExamAnswered, setIsLevelExamAnswered] = useState(false);
   const [levelExamScore, setLevelExamScore] = useState(0);
   const [levelExamResult, setLevelExamResult] = useState<{ score: number; passed: boolean; scorePercent: number } | null>(null);
+  // Shuffled copy of the current exam's questions for this attempt (options
+  // re-ordered so the correct answer is not always first; rebuilt on every
+  // start, so each attempt gets a fresh order)
+  const [shuffledExamQuestions, setShuffledExamQuestions] = useState<LevelExamQuestion[] | null>(null);
   // Certificate Modal States (level graduation only — no per-module certificates)
   const [levelCertificateOpen, setLevelCertificateOpen] = useState(false);
   const [levelCertificateToOpen, setLevelCertificateToOpen] = useState<"A1" | "A2" | "B1" | null>(null);
@@ -1538,6 +1543,21 @@ export default function App() {
     };
   };
 
+  // Shuffle one exam question's options (Fisher-Yates) and remap the
+  // correct-answer index, so the right answer is not always the first option.
+  const shuffleExamQuestion = (q: LevelExamQuestion): LevelExamQuestion => {
+    const order = q.options.map((_, i) => i);
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    return {
+      ...q,
+      options: order.map(i => q.options[i]),
+      correctAnswer: order.indexOf(q.correctAnswer),
+    };
+  };
+
   // Quiz calculations
   const handleOptionSelect = (option: string) => {
     if (isAnswered) return;
@@ -1604,11 +1624,15 @@ export default function App() {
     setLevelExamScore(0);
     setIsLevelExamActive(true);
     setLevelExamResult(null);
+    // Fresh random option order for this attempt
+    setShuffledExamQuestions(
+      LEVEL_EXAMS[selectedLevelExam].map(localizeExamQ).map(shuffleExamQuestion)
+    );
   };
 
   const handleLevelExamCheckAnswer = () => {
     if (levelExamSelectedOption === null || isLevelExamAnswered) return;
-    const questions = LEVEL_EXAMS[selectedLevelExam!];
+    const questions = shuffledExamQuestions ?? LEVEL_EXAMS[selectedLevelExam!].map(localizeExamQ);
     const isCorrect = levelExamSelectedOption === questions[levelExamCurrentIndex].correctAnswer;
     if (isCorrect) {
       setLevelExamScore(prev => prev + 1);
@@ -1617,7 +1641,7 @@ export default function App() {
   };
 
   const handleLevelExamNext = () => {
-    const questions = LEVEL_EXAMS[selectedLevelExam!];
+    const questions = shuffledExamQuestions ?? LEVEL_EXAMS[selectedLevelExam!].map(localizeExamQ);
     if (levelExamCurrentIndex < questions.length - 1) {
       setLevelExamSelectedOption(null);
       setIsLevelExamAnswered(false);
@@ -1702,7 +1726,7 @@ export default function App() {
   const renderLevelExamInterface = () => {
     if (!selectedLevelExam) return null;
 
-    const questions = LEVEL_EXAMS[selectedLevelExam].map(localizeExamQ);
+    const questions = shuffledExamQuestions ?? LEVEL_EXAMS[selectedLevelExam].map(localizeExamQ);
     const unlocked = isLevelUnlocked(selectedLevelExam);
     const completedLevelExams = progress.completedLevelExams || [];
     const isAlreadyPassed = completedLevelExams.includes(selectedLevelExam);
