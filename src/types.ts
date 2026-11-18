@@ -4,6 +4,11 @@ export interface QuizQuestion {
   options: string[];
   correctAnswer: string|number; // index of option or translation
   explanation: string;
+  // Optional English versions (bilingual support; only some modules have them)
+  questionEn?: string;
+  optionsEn?: string[];
+  correctAnswerEn?: string|number;
+  explanationEn?: string;
 }
 
 export interface ExampleSentence {
@@ -11,6 +16,8 @@ export interface ExampleSentence {
   translit: string;
   phonetic?: string;
   indonesian: string;
+  // English meaning (bilingual support)
+  english?: string;
 }
 
 export interface VocabularyWord {
@@ -19,6 +26,8 @@ export interface VocabularyWord {
   meaning: string;
   category?: string;
   notes?: string;
+  // English meaning (bilingual support)
+  meaningEn?: string;
 }
 
 export interface Module {
@@ -34,6 +43,12 @@ export interface Module {
   examples: ExampleSentence[];
   quizzes: QuizQuestion[];
   embedCode?: string;
+  // Optional English versions (bilingual support; only some modules have them)
+  titleEn?: string;
+  summaryEn?: string;
+  introductionEn?: string;
+  contentEn?: string;
+  keyRulesEn?: string[];
 }
 
 export interface UserProgress {

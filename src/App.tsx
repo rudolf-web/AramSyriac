@@ -46,7 +46,7 @@ import { AramiAuthGate } from "./components/AramiAuthGate";
 import { CertificateModal } from "./components/CertificateModal";
 import { DailyJournal } from "./components/DailyJournal";
 import { DonationCard } from "./components/DonationCard";
-import { UserProgress, Module, QuizQuestion, UserFile } from "./types";
+import { UserProgress, Module, QuizQuestion, UserFile, ExampleSentence, VocabularyWord } from "./types";
 import { LEVEL_EXAMS } from "./data/levelExams";
 import { 
   isFirebaseConfigured, 
@@ -177,6 +177,76 @@ function renderModuleEmbed(embed: string | undefined): React.ReactNode {
   );
 }
 
+// ---- Bilingual UI dictionary (Indonesian default, English for learners abroad) ----
+// Only the main student path is translated here (header, tabs, dashboard,
+// syllabus, module view, quiz). Admin screens, journal, level exams and the
+// certificate modal stay Indonesian in this sample pass.
+const UI_STRINGS = {
+  dashboard: { id: "Dasbor Utama", en: "Dashboard" },
+  curriculum: { id: "Kurikulum Modul Tata Bahasa", en: "Grammar Modules Curriculum" },
+  keyboard: { id: "Papan Ketik Aram", en: "Syriac Keyboard" },
+  notebook: { id: "Buku Kosakata", en: "Vocabulary Book" },
+  tutor: { id: "Tutor Bot AI", en: "AI Tutor Bot" },
+  files: { id: "Berkas & Akun", en: "Files & Account" },
+  completed: { id: "Selesai", en: "Completed" },
+  startLearning: { id: "Mulai Belajar (Syllabus Lengkap)", en: "Start Learning (Full Syllabus)" },
+  openTutor: { id: "Buka Konsultasi Tutor AI", en: "Open AI Tutor Consultation" },
+  modulesDone: { id: "Modul Selesai", en: "Modules Completed" },
+  vocabMemorized: { id: "Hafalan Kosakata", en: "Vocabulary Memorized" },
+  words: { id: "Kata", en: "Words" },
+  savedInNotebook: { id: "Tersimpan di Kamus Notebook", en: "Saved in the Vocabulary Notebook" },
+  academicRanking: { id: "Ranking Akademis", en: "Academic Ranking" },
+  restartDictionary: { id: "Mulai Ulang Kamus", en: "Reset Dictionary" },
+  repeatProgress: { id: "Mengulang Progress Kelas", en: "Reset Class Progress" },
+  syllabus: { id: "Silabus Modul Tata Bahasa", en: "Grammar Modules Syllabus" },
+  finalEval: { id: "Evaluasi Akhir Kelulusan", en: "Final Graduation Evaluation" },
+  teacherAccess: { id: "Akses Pengajar", en: "Teacher Access" },
+  passed: { id: "✓ Lulus", en: "✓ Passed" },
+  locked: { id: "🔒 Kunci", en: "🔒 Locked" },
+  start: { id: "🚀 Mulai", en: "🚀 Start" },
+  backToSyllabus: { id: "← Kembali ke Silabus", en: "← Back to Syllabus" },
+  moduleLocked: { id: "Modul Terkunci", en: "Module Locked" },
+  moduleLockedMsg: { id: "Modul ini belum dapat diakses. Anda wajib meluluskan kuis pada modul sebelumnya dengan standar kelulusan kompetensi murni (minimal 70% atau menjawab benar 7 dari 10 soal) sebelum modul selanjutnya terbuka secara otomatis.", en: "This module is not available yet. You must pass the previous module's quiz with a minimum score of 70% before the next module opens automatically." },
+  prereq: { id: "Prasyarat Pembelajaran:", en: "Learning Prerequisite:" },
+  prereqMsg: { id: "Luluskan seluruh kuis modul pendahulu untuk meretas kunci silabus ini.", en: "Pass all previous module quizzes to unlock this syllabus." },
+  module: { id: "Modul", en: "Module" },
+  introLabel: { id: "Pengantar Kajian:", en: "Introduction:" },
+  contentLabel: { id: "Teori Linguistik & Tata Bahasa:", en: "Linguistics & Grammar Theory:" },
+  rulesLabel: { id: "Pedoman Praktis (Aturan Kunci):", en: "Practical Guide (Key Rules):" },
+  examplesLabel: { id: "Contoh Kalimat / Konteks:", en: "Example Sentences / Context:" },
+  vocabLabel: { id: "Daftar Kosakata Bab:", en: "Chapter Vocabulary:" },
+  means: { id: "Artinya:", en: "Meaning:" },
+  fontLabel: { id: "Pilih Font Aksara & Panduan Vokal", en: "Choose Script Font & Vowel Guide" },
+  fontSub: { id: "Pilih jenis font dan fahami pelambangan tanda vokal bimbingan kurikulum.", en: "Choose a font style and learn the vowel marks from the curriculum guide." },
+  quizDone: { id: "✓ Anda sukses menuntaskan kuis modul ini!", en: "✓ You have completed this module's quiz!" },
+  quizTodo: { id: "Tuntaskan ujian kuis di modul untuk menandai kelulusan bab.", en: "Complete the module quiz to mark this chapter as passed." },
+  academicMastery: { id: "Ketuntasan Akademik:", en: "Academic Mastery:" },
+  openQuiz: { id: "Buka Kuis Modul", en: "Start Module Quiz" },
+  retakeQuiz: { id: "Ulangi Kuis Modul", en: "Retake Module Quiz" },
+  questions: { id: "Soal", en: "Questions" },
+  quizTitle: { id: "Ujian Kuis Modul", en: "Module Quiz" },
+  minPass: { id: "Min. Lulus 70%", en: "Min. Pass 70%" },
+  questionOf: { id: "Soal", en: "Question" },
+  of: { id: "dari", en: "of" },
+  checkAnswer: { id: "Periksa Jawaban", en: "Check Answer" },
+  nextQuestion: { id: "Soal Berikutnya", en: "Next Question" },
+  finishQuiz: { id: "Selesaikan Ujian", en: "Finish Quiz" },
+  cancelQuiz: { id: "Batal Kuis", en: "Cancel Quiz" },
+  correct: { id: "Benar sekali!", en: "That's correct!" },
+  incorrect: { id: "Jawaban kurang tepat!", en: "Not quite right!" },
+  score: { id: "Skor", en: "Score" },
+  passedQuiz: { id: "✓ Selamat! Anda Lulus!", en: "✓ Congratulations! You Passed!" },
+  failedQuiz: { id: "✗ Belum Memenuhi Batas Kelulusan", en: "✗ Passing Score Not Reached" },
+  certOpen: { id: "E-Sertifikat Terbuka!", en: "E-Certificate Unlocked!" },
+  certOpenMsg: { id: "Gelar kompetensi modul ini telah ditandatangani dan siap diunduh / dicetak.", en: "This module's competency certificate has been signed and is ready to download / print." },
+  keepPracticing: { id: "Terus Berlatih", en: "Keep Practicing" },
+  keepPracticingMsg: { id: "Bimbingan saksama Rudolf A. Luhukay mementingkan penguasaan yang murni.", en: "Rudolf A. Luhukay's careful guidance values true mastery." },
+  backToMaterial: { id: "Kembali ke Materi", en: "Back to Material" },
+  retakeNow: { id: "Ulangi Kuis Sekarang", en: "Retake the Quiz Now" },
+  nextModule: { id: "Lanjut ke Modul", en: "Go to Module" },
+  openExam: { id: "Buka Ujian", en: "Open Exam" },
+} as const;
+
 export default function App() {
   // Unique session ID once per application lifecycle to enforce one-device session policy
   const [appSessionId] = useState(() => Math.random().toString(36).substring(2) + Date.now().toString(36));
@@ -232,6 +302,21 @@ export default function App() {
 
   // Syriac dynamic font toggle
   const [syriacFont, setSyriacFont] = useState<"estrangelo" | "serto" | "madenhoyo">("estrangelo");
+
+  // Bilingual UI language: 'id' (default) or 'en', persisted locally
+  type Lang = "id" | "en";
+  const [lang, setLang] = useState<Lang>(() => {
+    try {
+      return (localStorage.getItem("arami_lang") === "en" ? "en" : "id") as Lang;
+    } catch {
+      return "id";
+    }
+  });
+  const switchLang = (l: Lang) => {
+    setLang(l);
+    try { localStorage.setItem("arami_lang", l); } catch { /* ignore */ }
+  };
+  const t = (key: keyof typeof UI_STRINGS) => UI_STRINGS[key][lang];
 
   useEffect(() => {
     document.body.classList.remove("syriac-estrangelo", "syriac-serto", "syriac-madenhoyo");
@@ -843,6 +928,23 @@ export default function App() {
 
   const currentModule = modules.find(m => m.id === selectedModuleId) || modules[0] || syriacModules[0];
 
+  // ---- Bilingual field helpers (English when available, Indonesian fallback) ----
+  const modTitle = (m: Module) => (lang === "en" && m.titleEn ? m.titleEn : m.title);
+  const modSummary = (m: Module) => (lang === "en" && m.summaryEn ? m.summaryEn : m.summary);
+  const modIntro = (m: Module) => (lang === "en" && m.introductionEn ? m.introductionEn : m.introduction);
+  const modContent = (m: Module) => (lang === "en" && m.contentEn ? m.contentEn : m.content);
+  const modKeyRules = (m: Module) => (lang === "en" && m.keyRulesEn ? m.keyRulesEn : m.keyRules);
+  const vocabMeaning = (v: VocabularyWord) => (lang === "en" && v.meaningEn ? v.meaningEn : v.meaning);
+  const exMeaning = (ex: ExampleSentence) => (lang === "en" && ex.english ? ex.english : ex.indonesian);
+  const localizeQuiz = (q: QuizQuestion): QuizQuestion => {
+    if (lang === "en" && q.questionEn && q.optionsEn && q.correctAnswerEn !== undefined && q.explanationEn) {
+      return { ...q, question: q.questionEn, options: q.optionsEn, correctAnswer: q.correctAnswerEn, explanation: q.explanationEn };
+    }
+    return q;
+  };
+  // Display version of the current module's quizzes in the active language
+  const displayQuizzes: QuizQuestion[] = (currentModule?.quizzes || []).map(localizeQuiz);
+
   // Quiz calculations
   const handleOptionSelect = (option: string) => {
     if (isAnswered) return;
@@ -851,7 +953,7 @@ export default function App() {
 
   const handleCheckAnswer = () => {
     if (!selectedOption || isAnswered) return;
-    const correct = currentModule.quizzes[currentQuizIndex].correctAnswer;
+    const correct = displayQuizzes[currentQuizIndex].correctAnswer;
     if (selectedOption === correct) {
       setQuizScore(prev => prev + 1);
     }
@@ -864,7 +966,7 @@ export default function App() {
       setIsAnswered(false);
       setCurrentQuizIndex(prev => prev + 1);
     } else {
-      const isLastAnswerCorrect = selectedOption === currentModule.quizzes[currentQuizIndex].correctAnswer;
+      const isLastAnswerCorrect = selectedOption === displayQuizzes[currentQuizIndex].correctAnswer;
       const finalScore = quizScore + (isLastAnswerCorrect ? 1 : 0);
       const totalQuestions = currentModule.quizzes.length || 1;
       const scorePercent = Math.round((finalScore / totalQuestions) * 105) > 100 
@@ -981,7 +1083,7 @@ export default function App() {
       const lvl = currentModule.category === "Level A1" ? "A1" : currentModule.category === "Level A2" ? "A2" : "B1";
       return (
         <button onClick={() => goToExam(lvl as any)} className={className}>
-          Buka Ujian {lvl} →
+          {t("openExam")} {lvl} →
         </button>
       );
     }
@@ -991,7 +1093,7 @@ export default function App() {
           onClick={() => { setSelectedModuleId(next.id); setIsQuizMode(false); setQuizResult(null); window.scrollTo({ top: 0, behavior: "smooth" }); }}
           className={className}
         >
-          Lanjut ke Modul {next.id} →
+          {t("nextModule")} {next.id} →
         </button>
       );
     }
@@ -999,7 +1101,7 @@ export default function App() {
     if (!examLevel) return null;
     return (
       <button onClick={() => goToExam(examLevel as any)} className={className}>
-        Buka Ujian {examLevel} →
+        {t("openExam")} {examLevel} →
       </button>
     );
   };
@@ -1067,7 +1169,7 @@ export default function App() {
               }}
               className="px-6 py-3 border border-[#D1CCBD] hover:bg-[#F1EEE6] text-[#5A5A40] text-xs sm:text-sm font-extrabold rounded-xl transition-all cursor-pointer"
             >
-              Kembali ke Silabus
+              {t("backToSyllabus")}
             </button>
 
             {levelExamResult.passed ? (
@@ -1298,7 +1400,7 @@ export default function App() {
                 onClick={() => setSelectedLevelExam(null)}
                 className="px-6 py-2.5 border border-[#D1CCBD] hover:bg-[#F1EEE6] text-[#8A8471] text-xs font-bold rounded-xl cursor-pointer"
               >
-                Kembali ke Silabus
+                {t("backToSyllabus")}
               </button>
               
               <button
@@ -1701,7 +1803,23 @@ export default function App() {
 
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-[#EBE7DC] rounded-xl font-bold border border-[#D1CCBD]/50 text-slate-700">
               <GraduationCap className="w-4.5 h-4.5" />
-              <span>Selesai: {getModuleProgressPercent()}%</span>
+              <span>{t("completed")}: {getModuleProgressPercent()}%</span>
+            </div>
+
+            {/* Language toggle ID | EN */}
+            <div className="flex items-center bg-[#EBE7DC] border border-[#D1CCBD]/50 rounded-xl overflow-hidden font-bold text-xs">
+              <button
+                onClick={() => switchLang("id")}
+                className={`px-2.5 py-1.5 cursor-pointer ${lang === "id" ? "bg-[#5A5A40] text-white" : "text-[#8A8471] hover:text-[#3D3A33]"}`}
+              >
+                ID
+              </button>
+              <button
+                onClick={() => switchLang("en")}
+                className={`px-2.5 py-1.5 cursor-pointer ${lang === "en" ? "bg-[#5A5A40] text-white" : "text-[#8A8471] hover:text-[#3D3A33]"}`}
+              >
+                EN
+              </button>
             </div>
 
             {/* Profile Avatar Trigger */}
@@ -1730,7 +1848,7 @@ export default function App() {
             }`}
           >
             <Trophy className="w-4 h-4" />
-            Dasbor Utama
+            {t("dashboard")}
           </button>
 
           <button
@@ -1740,7 +1858,7 @@ export default function App() {
             }`}
           >
             <BookOpen className="w-4 h-4" />
-            Kurikulum Modul Tata Bahasa
+            {t("curriculum")}
           </button>
 
           <button
@@ -1750,7 +1868,7 @@ export default function App() {
             }`}
           >
             <KeyboardIcon className="w-4 h-4" />
-            Papan Ketik Aram
+            {t("keyboard")}
           </button>
 
           <button
@@ -1760,7 +1878,7 @@ export default function App() {
             }`}
           >
             <BookMarked className="w-4 h-4" />
-            Buku Kosakata
+            {t("notebook")}
           </button>
 
           <button
@@ -1770,7 +1888,7 @@ export default function App() {
             }`}
           >
             <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500/10" />
-            Tutor Bot AI
+            {t("tutor")}
           </button>
 
           <button
@@ -1780,7 +1898,7 @@ export default function App() {
             }`}
           >
             <Database className="w-4 h-4 text-emerald-600 animate-pulse" />
-            Berkas & Akun
+            {t("files")}
           </button>
 
           {/* Persistent Admin Control console (only shown if role is admin) */}
@@ -1885,14 +2003,14 @@ export default function App() {
                           onClick={() => { setActiveTab("modules"); setSelectedLevelExam(null); }}
                           className="bg-[#EBE7DC] hover:bg-[#D1CCBD] text-[#3D3A33] font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer shadow"
                         >
-                          Mulai Belajar (Syllabus Lengkap)
+                          {t("startLearning")}
                         </button>
                         <button
                           onClick={() => setActiveTab("tutor")}
                           className="bg-white/10 hover:bg-white/20 border border-white/20 text-[#EBE7DC] font-semibold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1"
                         >
                           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                          Buka Konsultasi Tutor AI
+                          {t("openTutor")}
                         </button>
                       </div>
                     )}
@@ -1906,7 +2024,7 @@ export default function App() {
                 {isApproved && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 font-sans">
                     <div className="bg-white p-5 rounded-2xl border border-[#E8E4D9] shadow-sm text-center">
-                      <span className="text-[#8A8471] font-bold text-xs block uppercase tracking-wider mb-2">Modul Selesai</span>
+                      <span className="text-[#8A8471] font-bold text-xs block uppercase tracking-wider mb-2">{t("modulesDone")}</span>
                       <div className="text-3xl font-extrabold text-[#3D3A33] font-mono mb-2">
                         {progress.completedModules.length} <span className="text-xs text-[#8A8471]">/ {modules.length || 20}</span>
                       </div>
@@ -1919,15 +2037,15 @@ export default function App() {
                     </div>
 
                     <div className="bg-white p-5 rounded-2xl border border-[#E8E4D9] shadow-sm text-center">
-                      <span className="text-[#8A8471] font-bold text-xs block uppercase tracking-wider mb-2">Hafalan Kosakata</span>
+                      <span className="text-[#8A8471] font-bold text-xs block uppercase tracking-wider mb-2">{t("vocabMemorized")}</span>
                       <div className="text-3xl font-extrabold text-[#5A5A40] font-mono mb-1">
-                        {progress.savedVocabulary?.length || 0} Kata
+                        {progress.savedVocabulary?.length || 0} {t("words")}
                       </div>
-                      <span className="text-[10px] text-[#817A63] block">Tersimpan di Kamus Notebook</span>
+                      <span className="text-[10px] text-[#817A63] block">{t("savedInNotebook")}</span>
                     </div>
 
                     <div className="bg-white p-5 rounded-2xl border border-[#E8E4D9] shadow-sm text-center">
-                      <span className="text-[#8A8471] font-bold text-xs block uppercase tracking-wider mb-1">Ranking Akademis</span>
+                      <span className="text-[#8A8471] font-bold text-xs block uppercase tracking-wider mb-1">{t("academicRanking")}</span>
                       <div className="flex justify-center my-1">
                         <Award className="w-8 h-8 text-[#D1A153]" />
                       </div>
@@ -1938,12 +2056,12 @@ export default function App() {
                     </div>
 
                     <div className="bg-white p-5 rounded-2xl border border-[#E8E4D9] shadow-sm flex flex-col justify-between text-center">
-                      <span className="text-[#8A8471] font-bold text-xs block uppercase tracking-wider">Mulai Ulang Kamus</span>
+                      <span className="text-[#8A8471] font-bold text-xs block uppercase tracking-wider">{t("restartDictionary")}</span>
                       <button
                         onClick={handleResetProgress}
                         className="w-full bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-1.5 rounded-xl border border-red-200 text-xs transition-colors cursor-pointer"
                       >
-                        Mengulang Progress Kelas
+                        {t("repeatProgress")}
                       </button>
                     </div>
                   </div>
@@ -1992,7 +2110,7 @@ export default function App() {
                 {/* Modules navigation list */}
                 <div className="lg:col-span-4 space-y-4 max-h-[640px] overflow-y-auto pr-2 scrollbar-thin">
                   <div className="p-3 bg-[#5A5A40] text-white rounded-xl flex items-center justify-between gap-1.5">
-                    <span className="text-[10px] uppercase font-mono font-bold text-[#F9F7F2]">Silabus Modul Tata Bahasa</span>
+                    <span className="text-[10px] uppercase font-mono font-bold text-[#F9F7F2]">{t("syllabus")}</span>
                     {isAdmin && (
                       <button
                         onClick={handleAddNewModuleInline}
@@ -2009,11 +2127,11 @@ export default function App() {
                   <div className="bg-[#FAF8F5] border border-[#D1CCBD]/50 rounded-2xl p-3.5 space-y-2 text-sans shadow-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] uppercase font-mono font-bold text-[#8A8471] tracking-wider flex items-center gap-1">
-                        🏆 Evaluasi Akhir Kelulusan
+                        🏆 {t("finalEval")}
                       </span>
                       {isAdmin && (
                         <span className="text-[9px] px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded-md font-bold uppercase tracking-wider font-sans">
-                          Akses Pengajar
+                          {t("teacherAccess")}
                         </span>
                       )}
                     </div>
@@ -2044,7 +2162,7 @@ export default function App() {
                           >
                             <span className="text-[11px] font-extrabold font-sans">Level {lvl}</span>
                             <span className="text-[8.5px] font-sans font-medium">
-                              {isCompleted ? "✓ Lulus" : !unlocked ? "🔒 Kunci" : "🚀 Mulai"}
+                              {isCompleted ? t("passed") : !unlocked ? t("locked") : t("start")}
                             </span>
                           </button>
                         );
@@ -2091,7 +2209,7 @@ export default function App() {
                                   {m.id}
                                 </span>
                                 <div className="min-w-0 font-sans">
-                                  <h5 className={`text-xs font-bold truncate ${!unlocked ? "text-stone-500" : isSelected ? "text-white" : "text-[#3D3A33]"}`}>{m.title}</h5>
+                                  <h5 className={`text-xs font-bold truncate ${!unlocked ? "text-stone-500" : isSelected ? "text-white" : "text-[#3D3A33]"}`}>{modTitle(m)}</h5>
                                   <span className={`text-[9px] block ${isSelected ? "text-[#E8E4D9]" : "text-[#8A8471]"}`}>{m.category}</span>
                                 </div>
                               </div>
@@ -2137,7 +2255,7 @@ export default function App() {
                         onClick={() => setSelectedLevelExam(null)}
                         className="mb-4 px-4 py-2 border border-[#D1CCBD] hover:bg-[#F1EEE6] text-[#5A5A40] text-xs font-bold rounded-xl cursor-pointer"
                       >
-                        ← Kembali ke Silabus
+                        {t("backToSyllabus")}
                       </button>
                       {renderLevelExamInterface()}
                     </div>
@@ -2147,14 +2265,14 @@ export default function App() {
                         <Lock className="w-9 h-9" />
                       </div>
                       <div className="space-y-3 max-w-md mx-auto">
-                        <h3 className="text-xl sm:text-2xl font-bold font-serif text-[#3D3A33]">Modul Terkunci</h3>
+                        <h3 className="text-xl sm:text-2xl font-bold font-serif text-[#3D3A33]">{t("moduleLocked")}</h3>
                         <p className="text-xs text-[#8A8471] leading-relaxed font-sans font-medium">
-                          Modul ini belum dapat diakses. Anda wajib meluluskan kuis pada modul sebelumnya dengan standar kelulusan kompetensi murni (minimal 70% atau menjawab benar 7 dari 10 soal) sebelum modul selanjutnya terbuka secara otomatis.
+                          {t("moduleLockedMsg")}
                         </p>
                       </div>
                       <div className="bg-[#FCFBF8] border border-[#E8E4D9] p-4.5 rounded-2xl max-w-sm text-left text-xs text-[#5A5A40] space-y-1">
-                        <span className="font-extrabold text-[10px] uppercase tracking-wider block text-[#8A8471]">Prasyarat Pembelajaran:</span>
-                        <p className="font-medium">Luluskan seluruh kuis modul pendahulu untuk meretas kunci silabus ini.</p>
+                        <span className="font-extrabold text-[10px] uppercase tracking-wider block text-[#8A8471]">{t("prereq")}</span>
+                        <p className="font-medium">{t("prereqMsg")}</p>
                       </div>
                     </div>
                   ) : !isQuizMode ? (
@@ -2165,7 +2283,7 @@ export default function App() {
                         <div className="flex items-center justify-between gap-4 flex-wrap mb-1.5">
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] bg-[#E8E4D9] text-[#5A5A40] font-bold px-3 py-1 rounded-full uppercase tracking-wider font-mono">
-                              Modul {currentModule.id} • {currentModule.category}
+                              {t("module")} {currentModule.id} • {currentModule.category}
                             </span>
                             {isAdmin && !isAdminEditingMain && (
                               <button
@@ -2190,16 +2308,16 @@ export default function App() {
                             {currentModule.titleSyriac}
                           </span>
                         </div>
-                        <h3 className="text-xl sm:text-2xl font-extrabold text-[#3D3A33] font-serif">{currentModule.title}</h3>
-                        <p className="text-[#8A8471] text-xs leading-relaxed mt-0.5">{currentModule.summary}</p>
+                        <h3 className="text-xl sm:text-2xl font-extrabold text-[#3D3A33] font-serif">{modTitle(currentModule)}</h3>
+                        <p className="text-[#8A8471] text-xs leading-relaxed mt-0.5">{modSummary(currentModule)}</p>
                       </div>
 
                       {/* Interactive Font Selector & Vowel Guide Panel */}
                       <div className="bg-[#F1EEE6]/40 border border-[#E8E4D9] rounded-2xl p-4 font-sans text-xs space-y-3" id="font-vowel-panel">
                         <div className="flex items-center justify-between gap-4 flex-wrap pb-2 border-b border-[#E8E4D9]">
                           <div className="space-y-1">
-                            <h4 className="font-extrabold text-[#5A5A40] uppercase tracking-wide text-[10px]">Pilih Font Aksara & Panduan Vokal</h4>
-                            <p className="text-[#8A8471] text-[9px]">Pilih jenis font dan fahami pelambangan tanda vokal bimbingan kurikulum.</p>
+                            <h4 className="font-extrabold text-[#5A5A40] uppercase tracking-wide text-[10px]">{t("fontLabel")}</h4>
+                            <p className="text-[#8A8471] text-[9px]">{t("fontSub")}</p>
                           </div>
                           {/* Font switchers */}
                           <div className="flex gap-1.5 bg-white border border-[#D1CCBD] p-1 rounded-xl">
@@ -2439,13 +2557,13 @@ export default function App() {
                         /* Content block */
                         <div className="space-y-4">
                           <div className="bg-[#F1EEE6]/50 rounded-2xl p-4 border border-[#D1CCBD]/30 font-serif text-xs leading-relaxed whitespace-pre-line text-[#3D3A33]">
-                            <strong className="text-[#5A5A40] text-[10px] uppercase font-bold tracking-wider font-sans block mb-1">Pengantar Kajian:</strong>
-                            {currentModule.introduction}
+                            <strong className="text-[#5A5A40] text-[10px] uppercase font-bold tracking-wider font-sans block mb-1">{t("introLabel")}</strong>
+                            {modIntro(currentModule)}
                           </div>
 
                           <div className="space-y-2 font-serif text-xs leading-relaxed text-[#3D3A33]/90 whitespace-pre-line bg-[#F9F7F2]/40 p-4 rounded-xl border border-[#D1CCBD]/20">
-                            <strong className="text-[#5A5A40] text-[10px] uppercase font-bold tracking-wider font-sans block mb-1">Teori Linguistik & Tata Bahasa:</strong>
-                            {currentModule.content}
+                            <strong className="text-[#5A5A40] text-[10px] uppercase font-bold tracking-wider font-sans block mb-1">{t("contentLabel")}</strong>
+                            {modContent(currentModule)}
                           </div>
 
                           {renderModuleEmbed(currentModule.embedCode)}
@@ -2453,7 +2571,7 @@ export default function App() {
                           {/* Rules list */}
                           <div className="p-4 bg-yellow-50/20 border border-[#D1CCBD]/50 rounded-2xl">
                             <div className="flex items-center justify-between gap-1.5 mb-2">
-                              <span className="text-[#5A5A40] text-[10px] font-bold uppercase tracking-wider block font-sans">Pedoman Praktis (Aturan Kunci):</span>
+                              <span className="text-[#5A5A40] text-[10px] font-bold uppercase tracking-wider block font-sans">{t("rulesLabel")}</span>
                               {isAdmin && !isAddingKeyRule && (
                                 <button
                                   onClick={() => setIsAddingKeyRule(true)}
@@ -2491,7 +2609,7 @@ export default function App() {
                             )}
 
                             <ul className="list-disc list-inside space-y-1 text-xs leading-relaxed text-[#3D3A33] font-serif pl-1">
-                              {currentModule.keyRules?.map((r, idx) => (
+                              {modKeyRules(currentModule)?.map((r, idx) => (
                                 <li key={idx} className="group/item list-none flex items-center justify-between gap-2.5">
                                   <span className="flex items-center gap-1.5">
                                     <span className="text-amber-500">•</span>
@@ -2517,7 +2635,7 @@ export default function App() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3">
                         <div className="space-y-2.5">
                           <div className="flex items-center justify-between gap-1.5">
-                            <span className="text-[10px] text-[#5A5A40] uppercase font-bold tracking-widest block font-sans">Contoh Kalimat / Konteks:</span>
+                            <span className="text-[10px] text-[#5A5A40] uppercase font-bold tracking-widest block font-sans">{t("examplesLabel")}</span>
                             {isAdmin && !isAddingExample && (
                               <button
                                 onClick={() => setIsAddingExample(true)}
@@ -2592,7 +2710,7 @@ export default function App() {
                                     )}
                                   </div>
                                   <span className="text-[10px] text-slate-500 block">"{ex.phonetic}"</span>
-                                  <span className="text-slate-600 block mt-1 text-[11px]">Artinya: {ex.indonesian}</span>
+                                  <span className="text-slate-600 block mt-1 text-[11px]">{t("means")} {exMeaning(ex)}</span>
                                 </div>
                                 <span className={`text-xl font-bold text-[#5A5A40] ${getSyriacFontClass()}`} dir="rtl">{ex.syriac}</span>
                               </div>
@@ -2602,7 +2720,7 @@ export default function App() {
 
                         <div className="space-y-2.5">
                           <div className="flex items-center justify-between gap-1.5">
-                            <span className="text-[10px] text-[#5A5A40] uppercase font-bold tracking-widest block font-sans">Daftar Kosakata Bab:</span>
+                            <span className="text-[10px] text-[#5A5A40] uppercase font-bold tracking-widest block font-sans">{t("vocabLabel")}</span>
                             {isAdmin && !isAddingVocab && (
                               <button
                                 onClick={() => setIsAddingVocab(true)}
@@ -2668,7 +2786,7 @@ export default function App() {
                                       </button>
                                     )}
                                   </div>
-                                  <span className="text-[#8A8471] text-[10px] block mt-0.5">{v.meaning}</span>
+                                  <span className="text-[#8A8471] text-[10px] block mt-0.5">{vocabMeaning(v)}</span>
                                 </div>
                                 <span className={`text-lg font-bold text-[#3D3A33] ${getSyriacFontClass()}`} dir="rtl">{v.syriac}</span>
                               </div>
@@ -2679,17 +2797,17 @@ export default function App() {
 
                       {/* PRONUNCIATION PRACTICE: RECORD & LISTEN BACK */}
                       <PronunciationRecorder
-                        moduleTitle={currentModule.title || `Modul ${currentModule.id}`}
+                        moduleTitle={modTitle(currentModule) || `${t("module")} ${currentModule.id}`}
                         items={[
                           ...(currentModule.examples || []).slice(0, 5).map((ex) => ({
                             syriac: ex.syriac,
                             translit: ex.translit,
-                            translation: ex.indonesian,
+                            translation: exMeaning(ex),
                           })),
                           ...(currentModule.vocabulary || []).slice(0, 4).map((v) => ({
                             syriac: v.syriac,
                             translit: v.translit,
-                            translation: v.meaning,
+                            translation: vocabMeaning(v),
                           })),
                         ]}
                       />
@@ -3067,14 +3185,14 @@ export default function App() {
                           <div className="space-y-1 text-center sm:text-left">
                             <span className="text-[11px] text-[#817A63] font-medium font-serif leading-relaxed">
                               {progress.completedModules.includes(currentModule.id) ? (
-                                <span className="text-emerald-700 font-bold block font-sans">✓ Anda sukses menuntaskan kuis modul ini!</span>
+                                <span className="text-emerald-700 font-bold block font-sans">{t("quizDone")}</span>
                               ) : (
-                                "Tuntaskan ujian kuis di modul untuk menandai kelulusan bab."
+                                t("quizTodo")
                               )}
                             </span>
                             {/* CEFR and completion badge */}
                             <p className="text-[10px] text-slate-500 font-mono block">
-                              Ketuntasan Akademik: {currentModule.id >= 10 && currentModule.id <= 16 ? "CEFR A2 (Elementary)" : currentModule.id >= 18 ? "CEFR A2-B1" : "CEFR A1 (Beginner)"}
+                              {t("academicMastery")} {currentModule.id >= 10 && currentModule.id <= 16 ? "CEFR A2 (Elementary)" : currentModule.id >= 18 ? "CEFR A2-B1" : "CEFR A1 (Beginner)"}
                             </p>
                           </div>
                           
@@ -3091,7 +3209,7 @@ export default function App() {
                               }}
                               className="bg-[#5A5A40] hover:bg-[#4C4C36] text-white font-bold text-xs sm:text-sm px-6 py-2.5 rounded-xl shadow transition-colors cursor-pointer"
                             >
-                              {progress.completedModules.includes(currentModule.id) ? "Ulangi Kuis Modul" : `Buka Kuis Modul (${currentModule.quizzes?.length || 1} Soal)`}
+                              {progress.completedModules.includes(currentModule.id) ? t("retakeQuiz") : `${t("openQuiz")} (${currentModule.quizzes?.length || 1} ${t("questions")})`}
                             </button>
                           </div>
                         </div>
@@ -3110,18 +3228,18 @@ export default function App() {
                                 <span className={`text-2xl font-black ${quizResult.passed ? "text-emerald-600" : "text-amber-600"}`}>
                                   {quizResult.scorePercent}%
                                 </span>
-                                <span className="text-[10px] uppercase font-bold text-slate-400">Skor</span>
+                                <span className="text-[10px] uppercase font-bold text-slate-400">{t("score")}</span>
                               </div>
                             </div>
 
                             <div className="space-y-2">
                               <h3 className="text-xl font-extrabold font-serif text-[#3D3A33]">
-                                {quizResult.passed ? "✓ Selamat! Anda Lulus!" : "✗ Belum Memenuhi Batas Kelulusan"}
+                                {quizResult.passed ? t("passedQuiz") : t("failedQuiz")}
                               </h3>
                               <p className="text-xs text-[#817A63] max-w-md mx-auto leading-relaxed font-sans">
                                 {quizResult.passed 
-                                  ? `Luar biasa! Kemajuan belajar bahasa Aram Anda terbukti mantap dengan mencetak hasil ${quizResult.finalScore} benar dari ${quizResult.totalQuestions} pertanyaan (Kelulusan min. 70%).`
-                                  : `Anda menjawab ${quizResult.finalScore} benar dari ${quizResult.totalQuestions} pertanyaan. Butuh minimal 70% jawaban benar untuk lulus materi ini dan membuka sertifikat. Mari pelajari kembali dan coba lagi!`
+                                  ? lang === "en" ? `Amazing! Your Syriac learning progress is proven solid — you answered ${quizResult.finalScore} out of ${quizResult.totalQuestions} questions correctly (minimum pass 70%).` : `Luar biasa! Kemajuan belajar bahasa Aram Anda terbukti mantap dengan mencetak hasil ${quizResult.finalScore} benar dari ${quizResult.totalQuestions} pertanyaan (Kelulusan min. 70%).`
+                                  : lang === "en" ? `You answered ${quizResult.finalScore} out of ${quizResult.totalQuestions} questions correctly. You need at least 70% correct answers to pass this material. Review the lesson and try again!` : `Anda menjawab ${quizResult.finalScore} benar dari ${quizResult.totalQuestions} pertanyaan. Butuh minimal 70% jawaban benar untuk lulus materi ini dan membuka sertifikat. Mari pelajari kembali dan coba lagi!`
                                 }
                               </p>
                             </div>
@@ -3131,16 +3249,16 @@ export default function App() {
                               <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl max-w-sm mx-auto flex items-center gap-3 font-sans text-xs text-emerald-800 text-left">
                                 <Award className="w-8 h-8 text-amber-500 shrink-0" />
                                 <div>
-                                  <strong className="block font-bold text-emerald-950">E-Sertifikat Terbuka!</strong>
-                                  <span>Gelar kompetensi modul ini telah ditandatangani dan siap diunduh / dicetak.</span>
+                                  <strong className="block font-bold text-emerald-950">{t("certOpen")}</strong>
+                                  <span>{t("certOpenMsg")}</span>
                                 </div>
                               </div>
                             ) : (
                               <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl max-w-sm mx-auto flex items-center gap-3 font-sans text-xs text-amber-800 text-left">
                                 <BookOpen className="w-8 h-8 text-amber-600 shrink-0" />
                                 <div>
-                                  <strong className="block font-bold text-amber-950">Terus Berlatih</strong>
-                                  <span>Bimbingan saksama Rudolf A. Luhukay mementingkan penguasaan yang murni.</span>
+                                  <strong className="block font-bold text-amber-950">{t("keepPracticing")}</strong>
+                                  <span>{t("keepPracticingMsg")}</span>
                                 </div>
                               </div>
                             )}
@@ -3154,7 +3272,7 @@ export default function App() {
                               }}
                               className="w-full sm:w-auto px-4 py-2 hover:bg-[#F1EEE6] text-[#817A63] text-xs font-semibold rounded-xl text-center cursor-pointer select-none border border-[#D1CCBD]"
                             >
-                              Kembali ke Materi
+                              {t("backToMaterial")}
                             </button>
 
                             {(() => {
@@ -3179,7 +3297,7 @@ export default function App() {
                                 }}
                                 className="w-full sm:w-auto bg-[#5A5A40] hover:bg-[#4C4C36] font-bold text-white text-xs px-5 py-2.5 rounded-xl shadow-md cursor-pointer text-center select-none"
                               >
-                                Ulangi Kuis Sekarang
+                                {t("retakeNow")}
                               </button>
                             )}
                           </div>
@@ -3189,11 +3307,11 @@ export default function App() {
                           <div>
                             <div className="border-b border-[#E8E4D9] pb-4 flex justify-between items-center mb-6">
                               <div>
-                                <h4 className="text-[10px] uppercase font-bold text-[#5A5A40] tracking-wider font-mono">Ujian Kuis Modul {currentModule.id} • Min. Lulus 70%</h4>
-                                <h3 className="text-[#3D3A33] font-extrabold text-base sm:text-lg font-serif">{currentModule.title}</h3>
+                                <h4 className="text-[10px] uppercase font-bold text-[#5A5A40] tracking-wider font-mono">{t("quizTitle")} {currentModule.id} • {t("minPass")}</h4>
+                                <h3 className="text-[#3D3A33] font-extrabold text-base sm:text-lg font-serif">{modTitle(currentModule)}</h3>
                               </div>
                               <span className="text-xs font-mono font-bold bg-[#F1EEE6] text-[#5A5A40] px-3 py-1 rounded-full">
-                                Soal {currentQuizIndex + 1} dari {currentModule.quizzes?.length || 1}
+                                {t("questionOf")} {currentQuizIndex + 1} {t("of")} {currentModule.quizzes?.length || 1}
                               </span>
                             </div>
 
@@ -3209,14 +3327,14 @@ export default function App() {
                             {currentModule.quizzes && currentModule.quizzes[currentQuizIndex] && (
                               <div className="space-y-6">
                                 <div className="p-5 bg-[#F1EEE6]/60 border border-[#D1CCBD]/40 rounded-2xl text-[#3D3A33] font-semibold text-xs sm:text-sm leading-relaxed font-serif">
-                                  {currentModule.quizzes[currentQuizIndex].question}
+                                  {displayQuizzes[currentQuizIndex].question}
                                 </div>
 
                                 {/* Options */}
                                 <div className="grid grid-cols-1 gap-3 font-sans">
-                                  {currentModule.quizzes[currentQuizIndex].options.map((option, idx) => {
+                                  {displayQuizzes[currentQuizIndex].options.map((option, idx) => {
                                     const isSelected = selectedOption === option;
-                                    const isCorrect = option === currentModule.quizzes[currentQuizIndex].correctAnswer;
+                                    const isCorrect = option === displayQuizzes[currentQuizIndex].correctAnswer;
                                     
                                     let optStyle = "border-[#D1CCBD] hover:border-[#5A5A40] bg-white text-[#3D3A33]";
                                     if (isSelected) optStyle = "border-[#5A5A40] ring-2 ring-[#F1EEE6] bg-[#F1EEE6]/40 text-[#5A5A40]";
@@ -3246,12 +3364,12 @@ export default function App() {
 
                             {isAnswered && currentModule.quizzes && currentModule.quizzes[currentQuizIndex] && (
                               <div className={`p-4 rounded-2xl border text-xs leading-relaxed mt-6 font-sans ${
-                                selectedOption === currentModule.quizzes[currentQuizIndex].correctAnswer
+                                selectedOption === displayQuizzes[currentQuizIndex].correctAnswer
                                   ? "bg-emerald-50/50 border-emerald-100 text-emerald-800"
                                   : "bg-red-50/50 border-red-100 text-red-800"
                               }`}>
-                                <strong>{selectedOption === currentModule.quizzes[currentQuizIndex].correctAnswer ? "Benar sekali!" : "Jawaban kurang tepat!"}</strong>{" "}
-                                {currentModule.quizzes[currentQuizIndex].explanation}
+                                <strong>{selectedOption === displayQuizzes[currentQuizIndex].correctAnswer ? t("correct") : t("incorrect")}</strong>{" "}
+                                {displayQuizzes[currentQuizIndex].explanation}
                               </div>
                             )}
 
@@ -3266,7 +3384,7 @@ export default function App() {
                               }}
                               className="px-4 py-2 border border-[#D1CCBD] hover:bg-[#F1EEE6] text-[#8A8471] text-xs font-bold rounded-xl cursor-pointer"
                             >
-                              Batal Kuis
+                              {t("cancelQuiz")}
                             </button>
 
                             <div className="flex gap-2">
@@ -3276,14 +3394,14 @@ export default function App() {
                                   disabled={!selectedOption}
                                   className="bg-[#5A5A40] disabled:bg-[#D1CCBD] hover:bg-[#4C4C36] text-white font-bold text-xs sm:text-sm px-6 py-2.5 rounded-xl cursor-pointer"
                                 >
-                                  Periksa Jawaban
+                                  {t("checkAnswer")}
                                 </button>
                               ) : (
                                 <button
                                   onClick={handleNextQuizQuestion}
                                   className="bg-[#2D2A26] hover:bg-[#3D3A33] text-white font-bold text-xs sm:text-sm px-6 py-2.5 rounded-xl cursor-pointer"
                                 >
-                                  {currentQuizIndex === (currentModule.quizzes?.length || 1) - 1 ? "Selesaikan Ujian" : "Soal Berikutnya"}
+                                  {currentQuizIndex === (currentModule.quizzes?.length || 1) - 1 ? t("finishQuiz") : t("nextQuestion")}
                                 </button>
                               )}
                             </div>
